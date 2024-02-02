@@ -1,0 +1,524 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+>
+
+	<!-- Page -->
+	<!-- XamlIntelliSenseFileGenerator -->
+
+
+	<!--  Primary Colors color range  -->
+	<Color x:Key="True.White">#FFFFFF</Color>
+	<Color x:Key="True.Red">#FF0000</Color>
+	<Color x:Key="True.Yellow">#FFFF00</Color>
+	<Color x:Key="True.Green">#00FF00</Color>
+	<Color x:Key="True.Cyan">#00FFFF</Color>
+	<Color x:Key="True.Blue">#0000FF</Color>
+	<Color x:Key="True.Magenta">#FF00FF</Color>
+	<Color x:Key="True.Orange">#FF7F00</Color>
+	<Color x:Key="True.Purple">#9000FF</Color>
+	<Color x:Key="True.Black">#000000</Color>
+
+	<!--  gray color range  -->
+	<Color x:Key="Gray.970">#F5F5F5</Color>
+	<Color x:Key="Gray.950">#F1F1F1</Color>
+	<Color x:Key="Gray.900">#ECECEC</Color>
+	<Color x:Key="Gray.850">#E5E5E5</Color>
+	<Color x:Key="Gray.820">#DDDDDD</Color>
+	<Color x:Key="Gray.800">#D4D4D4</Color>
+	<Color x:Key="Gray.760">#C9C9C9</Color>
+	<Color x:Key="Gray.730">#BDBDBD</Color>
+	<Color x:Key="Gray.700">#AFAFAF</Color>
+	<Color x:Key="Gray.650">#A1A1A1</Color>
+	<Color x:Key="Gray.600">#939393</Color>
+	<Color x:Key="Gray.550">#868686</Color>
+	<Color x:Key="Gray.500">#7C7C7C</Color>
+	<Color x:Key="Gray.450">#747474</Color>
+	<Color x:Key="Gray.440">#6B6B6B</Color>
+	<Color x:Key="Gray.400">#616161</Color>
+	<Color x:Key="Gray.350">#565656</Color>
+	<Color x:Key="Gray.300">#4B4B4B</Color>
+	<Color x:Key="Gray.250">#404040</Color>
+	<Color x:Key="Gray.220">#363636</Color>
+	<Color x:Key="Gray.200">#2D2D2D</Color>
+	<Color x:Key="Gray.150">#242424</Color>
+	<Color x:Key="Gray.100">#1C1C1C</Color>
+	<Color x:Key="Gray.050">#161616</Color>
+	<Color x:Key="Gray.010">#111111</Color>
+
+	<!--  blue.gray color range  -->
+	<Color x:Key="Blue.Gray.950">#FBFCFC</Color>
+	<Color x:Key="Blue.Gray.900">#F1F3F5</Color>
+	<Color x:Key="Blue.Gray.800">#DCE2E5</Color>
+	<Color x:Key="Blue.Gray.700">#BBC7CD</Color>
+	<Color x:Key="Blue.Gray.600">#95A8B1</Color>
+	<Color x:Key="Blue.Gray.500">#738D99</Color>
+	<Color x:Key="Blue.Gray.450">#607D8B</Color>
+	<Color x:Key="Blue.Gray.400">#587380</Color>
+	<Color x:Key="Blue.Gray.300">#4D6571</Color>
+	<Color x:Key="Blue.Gray.200">#41555F</Color>
+	<Color x:Key="Blue.Gray.100">#34444C</Color>
+	<Color x:Key="Blue.Gray.050">#28343A</Color>
+	<Color x:Key="Blue.Gray.010">#1D252A</Color>
+
+	<!--  red color range  -->
+	<Color x:Key="Red.950">#FFF9F9</Color>
+	<Color x:Key="Red.900">#FFE8E8</Color>
+	<Color x:Key="Red.800">#FFC6C6</Color>
+	<Color x:Key="Red.700">#FF9292</Color>
+	<Color x:Key="Red.600">#FF5555</Color>
+	<Color x:Key="Red.500">#FF1F1F</Color>
+	<Color x:Key="Red.450">#FF0000</Color>
+	<Color x:Key="Red.400">#EB0000</Color>
+	<Color x:Key="Red.300">#CF0000</Color>
+	<Color x:Key="Red.200">#AE0000</Color>
+	<Color x:Key="Red.100">#8B0000</Color>
+	<Color x:Key="Red.050">#6A0000</Color>
+	<Color x:Key="Red.010">#4C0000</Color>
+
+	<Color x:Key="Red.A600">#FF8B8B</Color>
+	<Color x:Key="Red.A450">#FF5252</Color>
+	<Color x:Key="Red.A400">#EB4B4B</Color>
+	<Color x:Key="Red.A300">#CF4242</Color>
+
+	<!--  crimson color range  -->
+	<Color x:Key="Crimson.950">#FEF9FA</Color>
+	<Color x:Key="Crimson.900">#FCEAED</Color>
+	<Color x:Key="Crimson.800">#F7CBD3</Color>
+	<Color x:Key="Crimson.700">#F09BAB</Color>
+	<Color x:Key="Crimson.600">#E7627C</Color>
+	<Color x:Key="Crimson.500">#E03053</Color>
+	<Color x:Key="Crimson.450">#DC143C</Color>
+	<Color x:Key="Crimson.400">#CA1237</Color>
+	<Color x:Key="Crimson.300">#B21030</Color>
+	<Color x:Key="Crimson.200">#960D28</Color>
+	<Color x:Key="Crimson.100">#780A20</Color>
+	<Color x:Key="Crimson.050">#5B0818</Color>
+	<Color x:Key="Crimson.010">#420611</Color>
+
+	<!--  pink color range  -->
+	<Color x:Key="Pink.950">#FEF9FB</Color>
+	<Color x:Key="Pink.900">#FDEBF1</Color>
+	<Color x:Key="Pink.800">#FACDDC</Color>
+	<Color x:Key="Pink.700">#F69FBC</Color>
+	<Color x:Key="Pink.600">#F16997</Color>
+	<Color x:Key="Pink.500">#EC3976</Color>
+	<Color x:Key="Pink.450">#E91E63</Color>
+	<Color x:Key="Pink.400">#D61C5B</Color>
+	<Color x:Key="Pink.300">#BC1950</Color>
+	<Color x:Key="Pink.200">#9E1543</Color>
+	<Color x:Key="Pink.100">#7E1136</Color>
+	<Color x:Key="Pink.050">#600D29</Color>
+	<Color x:Key="Pink.010">#45091E</Color>
+
+	<Color x:Key="Pink.A600">#FF7FAB</Color>
+	<Color x:Key="Pink.A450">#FF4081</Color>
+	<Color x:Key="Pink.A400">#EB3B77</Color>
+	<Color x:Key="Pink.A300">#CF3469</Color>
+
+	<!--  magenta color range  -->
+	<Color x:Key="Magenta.950">#FFF9FF</Color>
+	<Color x:Key="Magenta.900">#FFE8FF</Color>
+	<Color x:Key="Magenta.800">#FFC6FF</Color>
+	<Color x:Key="Magenta.700">#FF92FF</Color>
+	<Color x:Key="Magenta.600">#FF55FF</Color>
+	<Color x:Key="Magenta.500">#FF1FFF</Color>
+	<Color x:Key="Magenta.450">#FF00FF</Color>
+	<Color x:Key="Magenta.400">#EB00EB</Color>
+	<Color x:Key="Magenta.300">#CF00CF</Color>
+	<Color x:Key="Magenta.200">#AE00AE</Color>
+	<Color x:Key="Magenta.100">#8B008B</Color>
+	<Color x:Key="Magenta.050">#6A006A</Color>
+	<Color x:Key="Magenta.010">#4C004C</Color>
+
+	<!--  purple color range  -->
+	<Color x:Key="Purple.950">#FDFBFD</Color>
+	<Color x:Key="Purple.900">#F7EFF9</Color>
+	<Color x:Key="Purple.800">#ECD6F0</Color>
+	<Color x:Key="Purple.700">#DBB0E2</Color>
+	<Color x:Key="Purple.600">#C784D2</Color>
+	<Color x:Key="Purple.500">#B55DC4</Color>
+	<Color x:Key="Purple.450">#AB47BC</Color>
+	<Color x:Key="Purple.400">#9D41AD</Color>
+	<Color x:Key="Purple.300">#8A3998</Color>
+	<Color x:Key="Purple.200">#743080</Color>
+	<Color x:Key="Purple.100">#5D2666</Color>
+	<Color x:Key="Purple.050">#471D4E</Color>
+	<Color x:Key="Purple.010">#331538</Color>
+
+	<Color x:Key="Purple.A600">#EA7FFC</Color>
+	<Color x:Key="Purple.A450">#E040FB</Color>
+	<Color x:Key="Purple.A400">#CE3BE7</Color>
+	<Color x:Key="Purple.A300">#B534CB</Color>
+
+	<!--  deep.purple color range  -->
+	<Color x:Key="Deep.Purple.950">#FBFAFD</Color>
+	<Color x:Key="Deep.Purple.900">#F1EDF9</Color>
+	<Color x:Key="Deep.Purple.800">#DDD3EF</Color>
+	<Color x:Key="Deep.Purple.700">#BEABE0</Color>
+	<Color x:Key="Deep.Purple.600">#997CCF</Color>
+	<Color x:Key="Deep.Purple.500">#7952C0</Color>
+	<Color x:Key="Deep.Purple.450">#673AB7</Color>
+	<Color x:Key="Deep.Purple.400">#5F35A8</Color>
+	<Color x:Key="Deep.Purple.300">#542F94</Color>
+	<Color x:Key="Deep.Purple.200">#47277C</Color>
+	<Color x:Key="Deep.Purple.100">#391F63</Color>
+	<Color x:Key="Deep.Purple.050">#2B184B</Color>
+	<Color x:Key="Deep.Purple.010">#1F1136</Color>
+
+	<Color x:Key="Deep.Purple.A600">#A888FF</Color>
+	<Color x:Key="Deep.Purple.A450">#7C4DFF</Color>
+	<Color x:Key="Deep.Purple.A400">#7247EB</Color>
+	<Color x:Key="Deep.Purple.A300">#643ECF</Color>
+
+	<!--  indigo color range  -->
+	<Color x:Key="Indigo.950">#FBFBFE</Color>
+	<Color x:Key="Indigo.900">#F1F2FC</Color>
+	<Color x:Key="Indigo.800">#DBDEF7</Color>
+	<Color x:Key="Indigo.700">#B9C0F0</Color>
+	<Color x:Key="Indigo.600">#929CE7</Color>
+	<Color x:Key="Indigo.500">#707DE0</Color>
+	<Color x:Key="Indigo.450">#5C6BDC</Color>
+	<Color x:Key="Indigo.400">#5562CA</Color>
+	<Color x:Key="Indigo.300">#4B56B2</Color>
+	<Color x:Key="Indigo.200">#3F4896</Color>
+	<Color x:Key="Indigo.100">#323A78</Color>
+	<Color x:Key="Indigo.050">#262C5B</Color>
+	<Color x:Key="Indigo.010">#1B2042</Color>
+
+	<Color x:Key="Indigo.A600">#8C9EFE</Color>
+	<Color x:Key="Indigo.A450">#536DFE</Color>
+	<Color x:Key="Indigo.A400">#4C64EA</Color>
+	<Color x:Key="Indigo.A300">#4358CE</Color>
+
+	<!--  true.blue color range  -->
+	<Color x:Key="True.Blue.950">#F9F9FF</Color>
+	<Color x:Key="True.Blue.900">#E8E8FF</Color>
+	<Color x:Key="True.Blue.800">#C6C6FF</Color>
+	<Color x:Key="True.Blue.700">#9292FF</Color>
+	<Color x:Key="True.Blue.600">#5555FF</Color>
+	<Color x:Key="True.Blue.500">#1F1FFF</Color>
+	<Color x:Key="True.Blue.450">#0000FF</Color>
+	<Color x:Key="True.Blue.400">#0000EB</Color>
+	<Color x:Key="True.Blue.300">#0000CF</Color>
+	<Color x:Key="True.Blue.200">#0000AE</Color>
+	<Color x:Key="True.Blue.100">#00008B</Color>
+	<Color x:Key="True.Blue.050">#00006A</Color>
+	<Color x:Key="True.Blue.010">#00004C</Color>
+
+	<Color x:Key="Dark.Blue.500">#39A0CF</Color>
+	<Color x:Key="Dark.Blue.450">#1E93C9</Color>
+	<Color x:Key="Dark.Blue.400">#1C87B9</Color>
+	<Color x:Key="Dark.Blue.300">#2C628B</Color>
+	<Color x:Key="Dark.Blue.200">#1A4260</Color>
+	<Color x:Key="Dark.Blue.100">#0F2637</Color>
+
+	<!--  blue color range  -->
+	<Color x:Key="Blue.970">#F4FAFE</Color>
+	<Color x:Key="Blue.950">#EFF7FE</Color>
+	<Color x:Key="Blue.900">#E7F4FE</Color>
+	<Color x:Key="Blue.850">#DDEFFD</Color>
+	<Color x:Key="Blue.820">#D1E9FC</Color>
+	<Color x:Key="Blue.800">#C3E2FB</Color>
+	<Color x:Key="Blue.760">#B1DAFA</Color>
+	<Color x:Key="Blue.730">#9DD0F9</Color>
+	<Color x:Key="Blue.700">#86C5F8</Color>
+	<Color x:Key="Blue.650">#6DB9F7</Color>
+	<Color x:Key="Blue.600">#55AEF6</Color>
+	<Color x:Key="Blue.550">#3FA4F5</Color>
+	<Color x:Key="Blue.500">#2D9CF4</Color>
+	<Color x:Key="Blue.450">#2196F3</Color>
+	<Color x:Key="Blue.440">#1F8CE2</Color>
+	<Color x:Key="Blue.400">#1D81D0</Color>
+	<Color x:Key="Blue.350">#1A75BC</Color>
+	<Color x:Key="Blue.300">#1768A7</Color>
+	<Color x:Key="Blue.250">#145B92</Color>
+	<Color x:Key="Blue.220">#114F7E</Color>
+	<Color x:Key="Blue.200">#0F446C</Color>
+	<Color x:Key="Blue.150">#0D395B</Color>
+	<Color x:Key="Blue.100">#0B2F4C</Color>
+	<Color x:Key="Blue.050">#09263E</Color>
+	<Color x:Key="Blue.010">#071F32</Color>
+
+
+	<Color x:Key="Blue.A600">#82B1FF</Color>
+	<Color x:Key="Blue.A450">#448AFF</Color>
+	<Color x:Key="Blue.A400">#3F7FEB</Color>
+	<Color x:Key="Blue.A300">#3770CF</Color>
+
+	<!--  light.blue color range  -->
+	<Color x:Key="Light.Blue.970">#F2FBFE</Color>
+	<Color x:Key="Light.Blue.950">#ECF9FE</Color>
+	<Color x:Key="Light.Blue.900">#E3F6FE</Color>
+	<Color x:Key="Light.Blue.850">#D8F2FD</Color>
+	<Color x:Key="Light.Blue.820">#CBEEFC</Color>
+	<Color x:Key="Light.Blue.800">#BAE8FB</Color>
+	<Color x:Key="Light.Blue.760">#A6E1FA</Color>
+	<Color x:Key="Light.Blue.730">#8FD9F9</Color>
+	<Color x:Key="Light.Blue.700">#75D0F8</Color>
+	<Color x:Key="Light.Blue.650">#59C6F7</Color>
+	<Color x:Key="Light.Blue.600">#3EBDF6</Color>
+	<Color x:Key="Light.Blue.550">#25B5F5</Color>
+	<Color x:Key="Light.Blue.500">#11AEF4</Color>
+	<Color x:Key="Light.Blue.450">#03A9F3</Color>
+	<Color x:Key="Light.Blue.440">#039EE2</Color>
+	<Color x:Key="Light.Blue.400">#0391D0</Color>
+	<Color x:Key="Light.Blue.350">#0383BC</Color>
+	<Color x:Key="Light.Blue.300">#0375A7</Color>
+	<Color x:Key="Light.Blue.250">#036692</Color>
+	<Color x:Key="Light.Blue.220">#03587E</Color>
+	<Color x:Key="Light.Blue.200">#034C6C</Color>
+	<Color x:Key="Light.Blue.150">#03405B</Color>
+	<Color x:Key="Light.Blue.100">#02354C</Color>
+	<Color x:Key="Light.Blue.050">#022B3E</Color>
+	<Color x:Key="Light.Blue.010">#022332</Color>
+
+	<Color x:Key="Light.Blue.A500">#57CBFF</Color>
+	<Color x:Key="Light.Blue.A450">#40C4FF</Color>
+	<Color x:Key="Light.Blue.A400">#3BB4EB</Color>
+	<Color x:Key="Light.Blue.A300">#349ECF</Color>
+	<Color x:Key="Light.Blue.A200">#2C85AE</Color>
+
+	<!--  dark.cyan color range  -->
+	<Color x:Key="Dark.Cyan.450">#57AEB9</Color>
+
+	<!--  cyan color range  -->
+	<Color x:Key="Cyan.950">#FAFEFF</Color>
+	<Color x:Key="Cyan.900">#ECFAFE</Color>
+	<Color x:Key="Cyan.800">#CFF3FC</Color>
+	<Color x:Key="Cyan.700">#A2E7FA</Color>
+	<Color x:Key="Cyan.600">#6ED9F7</Color>
+	<Color x:Key="Cyan.500">#40CDF4</Color>
+	<Color x:Key="Cyan.450">#26C6F3</Color>
+	<Color x:Key="Cyan.400">#23B6E0</Color>
+	<Color x:Key="Cyan.300">#1FA0C5</Color>
+	<Color x:Key="Cyan.200">#1A86A5</Color>
+	<Color x:Key="Cyan.100">#156B84</Color>
+	<Color x:Key="Cyan.050">#105164</Color>
+	<Color x:Key="Cyan.010">#0C3A48</Color>
+
+	<Color x:Key="Cyan.A600">#65FFFF</Color>
+	<Color x:Key="Cyan.A450">#18FFFF</Color>
+	<Color x:Key="Cyan.A300">#13CFCF</Color>
+	<Color x:Key="Cyan.A200">#10AEAE</Color>
+
+	<!--  teal color range  -->
+	<Color x:Key="Teal.950">#FAFDFD</Color>
+	<Color x:Key="Teal.900">#EDF9F8</Color>
+	<Color x:Key="Teal.800">#D3F0ED</Color>
+	<Color x:Key="Teal.700">#ABE2DC</Color>
+	<Color x:Key="Teal.600">#7CD1C9</Color>
+	<Color x:Key="Teal.500">#52C2B8</Color>
+	<Color x:Key="Teal.450">#3ABAAE</Color>
+	<Color x:Key="Teal.400">#35ABA0</Color>
+	<Color x:Key="Teal.300">#2F968D</Color>
+	<Color x:Key="Teal.200">#277E76</Color>
+	<Color x:Key="Teal.100">#1F655E</Color>
+	<Color x:Key="Teal.050">#184D47</Color>
+	<Color x:Key="Teal.010">#113733</Color>
+
+	<Color x:Key="Teal.A700">#BDFFEF</Color>
+	<Color x:Key="Teal.A450">#64FFDA</Color>
+	<Color x:Key="Teal.A400">#5CEBC9</Color>
+	<Color x:Key="Teal.A300">#51CFB1</Color>
+
+	<!--  green color range  -->
+	<Color x:Key="Green.950">#FBFEFB</Color>
+	<Color x:Key="Green.900">#EFFAEF</Color>
+	<Color x:Key="Green.800">#D7F3D8</Color>
+	<Color x:Key="Green.700">#B2E8B4</Color>
+	<Color x:Key="Green.600">#87DB8A</Color>
+	<Color x:Key="Green.500">#61CF65</Color>
+	<Color x:Key="Green.450">#4CC850</Color>
+	<Color x:Key="Green.400">#46B84A</Color>
+	<Color x:Key="Green.300">#3EA241</Color>
+	<Color x:Key="Green.200">#348837</Color>
+	<Color x:Key="Green.100">#2A6D2C</Color>
+	<Color x:Key="Green.050">#205321</Color>
+	<Color x:Key="Green.010">#173C18</Color>
+
+	<Color x:Key="Green.A700">#BFFDDC</Color>
+	<Color x:Key="Green.A450">#69FAAE</Color>
+	<Color x:Key="Green.A400">#61E6A0</Color>
+	<Color x:Key="Green.A300">#55CA8D</Color>
+
+	<!--  light.green color range  -->
+	<Color x:Key="Light.Green.950">#FCFDFB</Color>
+	<Color x:Key="Light.Green.900">#F5F9EF</Color>
+	<Color x:Key="Light.Green.800">#E5F1D7</Color>
+	<Color x:Key="Light.Green.700">#CDE5B2</Color>
+	<Color x:Key="Light.Green.600">#B1D786</Color>
+	<Color x:Key="Light.Green.500">#99CA60</Color>
+	<Color x:Key="Light.Green.450">#8BC34A</Color>
+	<Color x:Key="Light.Green.400">#80B344</Color>
+	<Color x:Key="Light.Green.300">#719E3C</Color>
+	<Color x:Key="Light.Green.200">#5F8532</Color>
+	<Color x:Key="Light.Green.100">#4C6A28</Color>
+	<Color x:Key="Light.Green.050">#3A511E</Color>
+	<Color x:Key="Light.Green.010">#2A3A16</Color>
+
+	<Color x:Key="Light.Green.A700">#CBFF90</Color>
+	<Color x:Key="Light.Green.A450">#B2FF59</Color>
+	<Color x:Key="Light.Green.A400">#A4EB52</Color>
+	<Color x:Key="Light.Green.A300">#90CF48</Color>
+
+	<!--  lime color range  -->
+	<Color x:Key="Lime.950">#FEFEFA</Color>
+	<Color x:Key="Lime.900">#FBFCED</Color>
+	<Color x:Key="Lime.800">#F4F7D3</Color>
+	<Color x:Key="Lime.700">#EAF0AB</Color>
+	<Color x:Key="Lime.600">#DEE77B</Color>
+	<Color x:Key="Lime.500">#D3E051</Color>
+	<Color x:Key="Lime.450">#CDDC39</Color>
+	<Color x:Key="Lime.400">#BDCA34</Color>
+	<Color x:Key="Lime.300">#A6B22E</Color>
+	<Color x:Key="Lime.200">#8B9627</Color>
+	<Color x:Key="Lime.100">#6F781F</Color>
+	<Color x:Key="Lime.050">#545B18</Color>
+	<Color x:Key="Lime.010">#3C4211</Color>
+
+	<Color x:Key="Lime.A700">#F8FFAE</Color>
+	<Color x:Key="Lime.A450">#EEFF41</Color>
+	<Color x:Key="Lime.A400">#DBEB3C</Color>
+	<Color x:Key="Lime.A300">#C1CF35</Color>
+
+	<!--  yellow color range  -->
+	<Color x:Key="Yellow.950">#FFFEFA</Color>
+	<Color x:Key="Yellow.900">#FFFDED</Color>
+	<Color x:Key="Yellow.800">#FFFAD3</Color>
+	<Color x:Key="Yellow.700">#FFF6AB</Color>
+	<Color x:Key="Yellow.600">#FFF17C</Color>
+	<Color x:Key="Yellow.500">#FFED53</Color>
+	<Color x:Key="Yellow.450">#FFEB3B</Color>
+	<Color x:Key="Yellow.400">#EBD836</Color>
+	<Color x:Key="Yellow.300">#CFBE30</Color>
+	<Color x:Key="Yellow.200">#AEA028</Color>
+	<Color x:Key="Yellow.100">#8B8020</Color>
+	<Color x:Key="Yellow.050">#6A6118</Color>
+	<Color x:Key="Yellow.010">#4C4611</Color>
+
+	<Color x:Key="Yellow.A700">#FFFF92</Color>
+	<Color x:Key="Yellow.A450">#FFFF00</Color>
+	<Color x:Key="Yellow.A400">#EBEB00</Color>
+	<Color x:Key="Yellow.A300">#CFCF00</Color>
+
+	<!--  amber color range  -->
+	<Color x:Key="Amber.950">#FFFDF9</Color>
+	<Color x:Key="Amber.900">#FFF9E9</Color>
+	<Color x:Key="Amber.800">#FFF1C8</Color>
+	<Color x:Key="Amber.700">#FFE495</Color>
+	<Color x:Key="Amber.600">#FFD559</Color>
+	<Color x:Key="Amber.500">#FFC825</Color>
+	<Color x:Key="Amber.450">#FFC107</Color>
+	<Color x:Key="Amber.400">#EBB206</Color>
+	<Color x:Key="Amber.300">#CF9D05</Color>
+	<Color x:Key="Amber.200">#AE8404</Color>
+	<Color x:Key="Amber.100">#8B6A03</Color>
+	<Color x:Key="Amber.050">#6A5102</Color>
+	<Color x:Key="Amber.010">#4C3A01</Color>
+
+	<Color x:Key="Amber.A600">#FFE47F</Color>
+	<Color x:Key="Amber.A450">#FFD740</Color>
+	<Color x:Key="Amber.A400">#EBC63B</Color>
+	<Color x:Key="Amber.A300">#CFAE34</Color>
+
+	<!--  orange color range  -->
+	<Color x:Key="Orange.950">#FFFCF9</Color>
+	<Color x:Key="Orange.900">#FFF3E8</Color>
+	<Color x:Key="Orange.800">#FFE2C6</Color>
+	<Color x:Key="Orange.700">#FFC892</Color>
+	<Color x:Key="Orange.600">#FFA955</Color>
+	<Color x:Key="Orange.500">#FF8E1F</Color>
+	<Color x:Key="Orange.450">#FF7F00</Color>
+	<Color x:Key="Orange.400">#EB7500</Color>
+	<Color x:Key="Orange.300">#CF6700</Color>
+	<Color x:Key="Orange.200">#AE5700</Color>
+	<Color x:Key="Orange.100">#8B4600</Color>
+	<Color x:Key="Orange.050">#6A3500</Color>
+	<Color x:Key="Orange.010">#4C2600</Color>
+
+	<Color x:Key="Orange.A700">#FFC77F</Color>
+	<Color x:Key="Orange.A450">#FFAB40</Color>
+	<Color x:Key="Orange.A300">#CF8A34</Color>
+	<Color x:Key="Orange.A200">#AE742C</Color>
+
+	<!--  deep.orange color range  -->
+	<Color x:Key="Deep.Orange.950">#FFFBF9</Color>
+	<Color x:Key="Deep.Orange.900">#FFF0EB</Color>
+	<Color x:Key="Deep.Orange.800">#FFDACE</Color>
+	<Color x:Key="Deep.Orange.700">#FFB7A1</Color>
+	<Color x:Key="Deep.Orange.600">#FF8F6C</Color>
+	<Color x:Key="Deep.Orange.500">#FF6B3D</Color>
+	<Color x:Key="Deep.Orange.450">#FF5722</Color>
+	<Color x:Key="Deep.Orange.400">#EB501F</Color>
+	<Color x:Key="Deep.Orange.300">#CF461B</Color>
+	<Color x:Key="Deep.Orange.200">#AE3B17</Color>
+	<Color x:Key="Deep.Orange.100">#8B2F12</Color>
+	<Color x:Key="Deep.Orange.050">#6A240E</Color>
+	<Color x:Key="Deep.Orange.010">#4C1A0A</Color>
+
+	<Color x:Key="Deep.Orange.A600">#FF9E7F</Color>
+	<Color x:Key="Deep.Orange.A450">#FF6E40</Color>
+	<Color x:Key="Deep.Orange.A400">#EB653B</Color>
+	<Color x:Key="Deep.Orange.A300">#CF5934</Color>
+
+	<!--  tan color range  -->
+	<Color x:Key="Tan.950">#FFFDFC</Color>
+	<Color x:Key="Tan.900">#FEF8F3</Color>
+	<Color x:Key="Tan.800">#FCEEE1</Color>
+	<Color x:Key="Tan.700">#F9DFC5</Color>
+	<Color x:Key="Tan.600">#F5CDA5</Color>
+	<Color x:Key="Tan.500">#F2BD88</Color>
+	<Color x:Key="Tan.450">#F0B478</Color>
+	<Color x:Key="Tan.400">#DDA66E</Color>
+	<Color x:Key="Tan.300">#C29261</Color>
+	<Color x:Key="Tan.200">#A37B51</Color>
+	<Color x:Key="Tan.100">#826241</Color>
+	<Color x:Key="Tan.050">#634A31</Color>
+	<Color x:Key="Tan.010">#473523</Color>
+
+	<!--  medium.brown color range  -->
+	<Color x:Key="Medium.Brown.950">#FCFBFA</Color>
+	<Color x:Key="Medium.Brown.900">#F5F0ED</Color>
+	<Color x:Key="Medium.Brown.800">#E7DAD2</Color>
+	<Color x:Key="Medium.Brown.700">#D1B7A9</Color>
+	<Color x:Key="Medium.Brown.600">#B78E78</Color>
+	<Color x:Key="Medium.Brown.500">#A06A4D</Color>
+	<Color x:Key="Medium.Brown.450">#935635</Color>
+	<Color x:Key="Medium.Brown.400">#874F31</Color>
+	<Color x:Key="Medium.Brown.300">#77462B</Color>
+	<Color x:Key="Medium.Brown.200">#643B24</Color>
+	<Color x:Key="Medium.Brown.100">#502F1D</Color>
+	<Color x:Key="Medium.Brown.050">#3D2416</Color>
+	<Color x:Key="Medium.Brown.010">#2C1A10</Color>
+
+	<!--  brown color range  -->
+	<Color x:Key="Brown.950">#FDFBF9</Color>
+	<Color x:Key="Brown.900">#F8F1EA</Color>
+	<Color x:Key="Brown.800">#EDDDCB</Color>
+	<Color x:Key="Brown.700">#DDBD9B</Color>
+	<Color x:Key="Brown.600">#CA9862</Color>
+	<Color x:Key="Brown.500">#B97731</Color>
+	<Color x:Key="Brown.450">#AF6515</Color>
+	<Color x:Key="Brown.400">#A15D13</Color>
+	<Color x:Key="Brown.300">#8E5211</Color>
+	<Color x:Key="Brown.200">#77450E</Color>
+	<Color x:Key="Brown.100">#5F370B</Color>
+	<Color x:Key="Brown.050">#482A08</Color>
+	<Color x:Key="Brown.010">#341E06</Color>
+
+	<!--  dark.brown color range  -->
+	<Color x:Key="Dark.Brown.950">#FCFBFB</Color>
+	<Color x:Key="Dark.Brown.900">#F3F0EF</Color>
+	<Color x:Key="Dark.Brown.800">#E1D9D6</Color>
+	<Color x:Key="Dark.Brown.700">#C5B6B1</Color>
+	<Color x:Key="Dark.Brown.600">#A58D85</Color>
+	<Color x:Key="Dark.Brown.500">#89695E</Color>
+	<Color x:Key="Dark.Brown.450">#795548</Color>
+	<Color x:Key="Dark.Brown.400">#6F4E42</Color>
+	<Color x:Key="Dark.Brown.300">#62453A</Color>
+	<Color x:Key="Dark.Brown.200">#523A31</Color>
+	<Color x:Key="Dark.Brown.100">#422E27</Color>
+	<Color x:Key="Dark.Brown.050">#32231E</Color>
+	<Color x:Key="Dark.Brown.010">#241916</Color>
+
+</ResourceDictionary>
