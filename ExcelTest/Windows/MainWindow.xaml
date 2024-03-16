@@ -8,18 +8,15 @@
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:local="clr-namespace:ExcelTest.Windows"
 		Title="Josh - Pdf Assembler"
-		Width="Auto"
-		Height="600"
-		MinHeight="600"
 		DataContext="{Binding ElementName=WinMain}"
 		mc:Ignorable="d"
 		Background="#333333"
 		Foreground="White"
 		ResizeMode="NoResize"
 		SizeToContent="WidthAndHeight"
-		Loaded="MainWindow_OnLoaded"
-		Closing="MainWindow_OnClosing"
 		>
+		<!-- Width="710" -->
+		<!-- Height="600" -->
 
 	<Window.Resources>
 
@@ -195,7 +192,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="40" />
-				<RowDefinition Height="*" />
+				<RowDefinition Height="360" />
 				<RowDefinition Height="40" />
 			</Grid.RowDefinitions>
 
@@ -206,6 +203,7 @@
 					HorizontalAlignment="Right"
 					VerticalAlignment="Bottom"
 					Orientation="Horizontal"
+					MinHeight="30"
 					>
 
 
@@ -242,7 +240,6 @@
 					<RowDefinition Height="24" />
 					<RowDefinition Height="24" />
 				</Grid.RowDefinitions>
-
 
 				<TextBlock Grid.Column="0"
 						Grid.Row="0"
@@ -582,8 +579,9 @@
 					FontFamily="Consolas"
 					Background="#222222"
 					Foreground="White"
-					HorizontalScrollBarVisibility="Auto"
-					VerticalScrollBarVisibility="Auto"
+					VerticalAlignment="Stretch"
+					HorizontalScrollBarVisibility="Visible"
+					VerticalScrollBarVisibility="Visible"
 					Text="{Binding Messages}"
 					/>
 		</Grid>
@@ -608,8 +606,8 @@
 							Content="test File Dialogs"
 							Height="28"
 							VerticalAlignment="Bottom"
+
 							/>
-							<!-- Click="BtnFileDialogs_OnClick" -->
 				</StackPanel>
 
 

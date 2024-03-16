@@ -5,13 +5,7 @@ VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InsertAndAdaptOutlines", "InsertAndAdaptOutlines\InsertAndAdaptOutlines.csproj", "{174ACA87-D15B-485B-815A-0C94F4B80743}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelTests", "ExcelTests\ExcelTests.csproj", "{E2D416D7-FCA6-4950-92C9-025E391470D2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExcelTest", "ExcelTest\ExcelTest.csproj", "{C0029245-43B8-41CF-B8AB-83EC46B5466E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedPdfCode", "SharedPdfCode\SharedPdfCode.csproj", "{C752021D-04F4-49DF-8CF6-C4BF51BAB143}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedCode", "SharedCode\SharedCode.csproj", "{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{88B28DF3-7D8E-4877-922F-78975A018460}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,49 +13,74 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Resources\CyberStudio Logo.ico = Resources\CyberStudio Logo.ico
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonCode", "CommonCode\CommonCode.shproj", "{8C7FA9AD-F52B-4E37-B841-27FEDABF86EA}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonPdfCode", "CommonPdfCode\CommonPdfCode.shproj", "{81B4DB4A-701E-4EE4-B061-E8CFF8F44869}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Josh", "Josh\Josh.csproj", "{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resource", "Resource\Resource.csproj", "{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonWpfCode", "CommonWpfCode\CommonWpfCode.shproj", "{EC57FCD5-6DC1-4BA2-B0B2-F4256BEAC1D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		JoshDbg|Any CPU = JoshDbg|Any CPU
-		JoshRelease|Any CPU = JoshRelease|Any CPU
 		Release|Any CPU = Release|Any CPU
+		XlTestDbg|Any CPU = XlTestDbg|Any CPU
+		XlTestRelease|Any CPU = XlTestRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{174ACA87-D15B-485B-815A-0C94F4B80743}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{174ACA87-D15B-485B-815A-0C94F4B80743}.JoshDbg|Any CPU.ActiveCfg = Release|Any CPU
-		{174ACA87-D15B-485B-815A-0C94F4B80743}.JoshRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{174ACA87-D15B-485B-815A-0C94F4B80743}.JoshDbg|Any CPU.ActiveCfg = JoshDbg|Any CPU
 		{174ACA87-D15B-485B-815A-0C94F4B80743}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2D416D7-FCA6-4950-92C9-025E391470D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2D416D7-FCA6-4950-92C9-025E391470D2}.JoshDbg|Any CPU.ActiveCfg = Release|Any CPU
-		{E2D416D7-FCA6-4950-92C9-025E391470D2}.JoshRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{E2D416D7-FCA6-4950-92C9-025E391470D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{174ACA87-D15B-485B-815A-0C94F4B80743}.XlTestDbg|Any CPU.ActiveCfg = Debug|Any CPU
+		{174ACA87-D15B-485B-815A-0C94F4B80743}.XlTestRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.JoshDbg|Any CPU.ActiveCfg = Debug|Any CPU
-		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.JoshDbg|Any CPU.Build.0 = Debug|Any CPU
-		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.JoshRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.JoshRelease|Any CPU.Build.0 = Release|Any CPU
+		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.JoshDbg|Any CPU.ActiveCfg = JoshDbg|Any CPU
 		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.JoshDbg|Any CPU.ActiveCfg = Debug|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.JoshDbg|Any CPU.Build.0 = Debug|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.JoshRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.JoshRelease|Any CPU.Build.0 = Release|Any CPU
-		{C752021D-04F4-49DF-8CF6-C4BF51BAB143}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.JoshDbg|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.JoshDbg|Any CPU.Build.0 = Debug|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.JoshRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.JoshRelease|Any CPU.Build.0 = Release|Any CPU
-		{E4A8376E-413B-45FA-B59D-C1FF25CAFDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.XlTestDbg|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.XlTestDbg|Any CPU.Build.0 = Debug|Any CPU
+		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.XlTestRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{C0029245-43B8-41CF-B8AB-83EC46B5466E}.XlTestRelease|Any CPU.Build.0 = Release|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.JoshDbg|Any CPU.ActiveCfg = Debug|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.JoshDbg|Any CPU.Build.0 = Debug|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.XlTestDbg|Any CPU.ActiveCfg = Debug|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.XlTestDbg|Any CPU.Build.0 = Debug|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.XlTestRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{CADEB45E-6E2F-4A26-9EA3-103E6B80A790}.XlTestRelease|Any CPU.Build.0 = Release|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.JoshDbg|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.JoshDbg|Any CPU.Build.0 = Debug|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.XlTestDbg|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.XlTestDbg|Any CPU.Build.0 = Debug|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.XlTestRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{CB691D32-3CCD-44C9-BF95-4CED5F7DB788}.XlTestRelease|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {417C6EC8-C28E-42FD-A353-34D5B2153347}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		CommonPdfCode\CommonPdfCode.projitems*{81b4db4a-701e-4ee4-b061-e8cff8f44869}*SharedItemsImports = 13
+		CommonCode\CommonCode.projitems*{8c7fa9ad-f52b-4e37-b841-27fedabf86ea}*SharedItemsImports = 13
+		CommonCode\CommonCode.projitems*{c0029245-43b8-41cf-b8ab-83ec46b5466e}*SharedItemsImports = 5
+		CommonPdfCode\CommonPdfCode.projitems*{c0029245-43b8-41cf-b8ab-83ec46b5466e}*SharedItemsImports = 5
+		CommonCode\CommonCode.projitems*{cadeb45e-6e2f-4a26-9ea3-103e6b80a790}*SharedItemsImports = 5
+		CommonPdfCode\CommonPdfCode.projitems*{cadeb45e-6e2f-4a26-9ea3-103e6b80a790}*SharedItemsImports = 5
+		CommonWpfCode\CommonWpfCode.projitems*{cadeb45e-6e2f-4a26-9ea3-103e6b80a790}*SharedItemsImports = 5
+		CommonWpfCode\CommonWpfCode.projitems*{ec57fcd5-6dc1-4ba2-b0b2-f4256beac1d6}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

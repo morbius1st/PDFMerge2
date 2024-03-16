@@ -1,7 +1,7 @@
-﻿using SharedPdfCode.PdfLibrary;
+﻿using CommonPdfCodePdfLibrary;
 using System.Collections.Generic;
 using System.Windows.Documents;
-using SharedCode.ShCode;
+using CommonCode.ShCode;
 using UtilityLibrary;
 using static ExcelTest.SheetSchedule.ColumnSubject;
 
@@ -22,11 +22,11 @@ public enum PdfDataStatus
 
 public interface IPdfData
 {
-	public int Sequence { get; set; }
-	public RowType RowType { get; }
+	public int            Sequence { get; set; }
+	public RowType        RowType { get; }
 	public List<string?>? Headings { get; set; }
-	public string? FilePath { get; }
-	public bool SetValue(ColumnSubject cs, string? value);
+	public string?        FilePath { get; }
+	public bool           SetValue(ColumnSubject cs, string? value);
 
 	// public PdfDataStatus Status { get; }
 	public Status.StatusData.ErrorCodes Status { get; }
@@ -36,30 +36,30 @@ public interface IPdfData
 
 public interface IPdfDataEx : IPdfData
 {
-	public PdfFile PdfFile { get; }
-
-	public string Bookmark { get; }
-
-	public bool KeepBookmarks { get; }
-
-	public int PageCount { get; }
+	public PdfFile        PdfFile { get; }
+				          
+	public string         Bookmark { get; }
+				          
+	public bool           KeepBookmarks { get; }
+				          
+	public int            PageCount { get; }
 
 }
 
 public class PdfSchData : IPdfData
 {
-	public int Sequence { get; set; }
-	public RowType RowType { get; } = RowType.RT_LIST;
+	public int            Sequence { get; set; }
+	public RowType        RowType { get; } = RowType.RT_LIST;
 	public List<string?>? Headings { get; set; }
 
-	public IFilePath File => new FilePath<FileNameSimple>(FilePath);
+	public IFilePath      File => new FilePath<FileNameSimple>(FilePath);
 
-	public string? FilePath { get; private set; }
+	public string?        FilePath { get; private set; }
 
-	public string? XlsxPath { get; private set; }
-	public string? PdfPath { get; private set; }
+	public string?        XlsxPath { get; private set; }
+	public string?        PdfPath { get; private set; }
 
-	public string? TypeName { get; set; }
+	public string?        TypeName { get; set; }
 
 	// public PdfDataStatus Status { get; private set; }
 	public Status.StatusData.ErrorCodes Status { get; private set; }

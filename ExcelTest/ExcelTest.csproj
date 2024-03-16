@@ -14,13 +14,11 @@
     <Copyright>Copyright (C) 2024</Copyright>
     <ApplicationIcon>CyberStudio Logo.ico</ApplicationIcon>
     <AssemblyName>Josh</AssemblyName>
-    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);USER_SETTINGS</DefineConstants>
-    <DebugType>none</DebugType>
+    <DebugType>full</DebugType>
     <Optimize>False</Optimize>
   </PropertyGroup>
 
@@ -37,8 +35,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\UtilityLibrary\UtilityLibrary\CsStringUtil.cs" Link=".Linked\CsStringUtil.cs" />
-    <Compile Include="..\..\..\UtilityLibrary\UtilityLibrary\CsUtilities.cs" Link=".Linked\CsUtilities.cs" />
-    <Compile Include="..\..\..\UtilityLibrary\UtilityLibrary\CsXmlUtilities.cs" Link=".Linked\CsXmlUtilities.cs" />
     <Compile Include="..\..\..\UtilityLibrary\UtilityLibrary\SettingManager\v7.4\SettingsMgr.cs" Link=".Linked\SettingsMgr.cs" />
     <Compile Include=".Settings\AppSettings.cs" />
     <Compile Include=".Settings\DataSet.cs" />
@@ -47,20 +43,17 @@
     <Compile Include=".Settings\SiteSettings.cs" />
     <Compile Include=".Settings\SuiteSettings.cs" />
     <Compile Include=".Settings\UserSettings.cs" />
-    <Compile Include=".Settings\WinLocation.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include=".notes\Notes.txt" />
+    <None Include=".notes\Notes.txt" />
     <Content Include="CyberStudio Logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.6.0" />
-    <PackageReference Include="itext7" Version="8.0.2">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
-    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.2" />
+    <PackageReference Include="itext7" Version="8.0.3" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.3" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
   </ItemGroup>
 
@@ -69,16 +62,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedCode\SharedCode.csproj" />
-    <ProjectReference Include="..\SharedPdfCode\SharedPdfCode.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -87,17 +70,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+
+  <Import Project="..\CommonCode\CommonCode.projitems" Label="Shared" />
+
+  <Import Project="..\CommonPdfCode\CommonPdfCode.projitems" Label="Shared" />
 
 </Project>

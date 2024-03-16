@@ -606,7 +606,7 @@
 							Content="test File Dialogs"
 							Height="28"
 							VerticalAlignment="Bottom"
-							Click="BtnFileDialogs_OnClick"
+
 							/>
 				</StackPanel>
 

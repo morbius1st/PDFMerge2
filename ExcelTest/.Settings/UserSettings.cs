@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using SharedCode.ShCode;
+
 
 // User settings (per user) 
 //  - user's settings for a specific app
@@ -21,17 +20,6 @@ namespace SettingsManager
 	[DataContract(Namespace = "")]
 	public class UserSettingDataFile : IDataFile
 	{
-		public UserSettingDataFile()
-		{
-			WinLocations = new Dictionary<WinId, WinLocation>();
-		}
-
-		[OnDeserialized]
-		private void OnDeserialized(StreamingContext context)
-		{
-			if (WinLocations == null) WinLocations = new Dictionary<WinId, WinLocation>();
-		}
-
 		[IgnoreDataMember]
 		public string DataFileVersion => "user 7.4u";
 
@@ -58,31 +46,6 @@ namespace SettingsManager
 
 		[DataMember(Order = 6)]
 		public bool OverwriteDestination { get; set; } = false;
-
-		[DataMember]
-		public Dictionary<WinId, WinLocation> WinLocations { get; set; }
-
-
-		public WinLocation GetLocation(WinId id)
-		{
-			if (WinLocations.ContainsKey(id)) { return WinLocations[id]; }
-
-			return new WinLocation(100.0, 100.0, -1.0, -1.0);
-		}
-
-		public void SaveLocation(WinId id, WinLocation location)
-		{
-			if (WinLocations.ContainsKey(id))
-			{
-				WinLocations[id] = location;
-			}
-			else
-			{
-				WinLocations.Add(id,location);
-			}
-		}
-
-
 	}
 
 #endregion

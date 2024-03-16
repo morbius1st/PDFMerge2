@@ -44,14 +44,14 @@ title checking methods:
 validateSchTitles
 validateDataRowTitles
 
-
 read primary schedule
-GetSchedule(file)
+GetSchedule (file)
+	** parses prime schedule file and creates *schedules* (List<IPdfData>) (see output example below)
 +> parseSchData  [(*)validateSchType]
 	+> getSchTitles
 	|	+> parseSchTitles [read from data collection]
 	|	+> validateSchTitles [check that every column title read matches - since row type are optional, cannot determine if all req'd are provided]
-	+> parseSchDataRows [/ADD]
+	+> parseSchDataRows [/ADD to schedules]
 
 same as sheet schedule
 	    +> parseDataRow [getRowType, getHeading, parseRowData [extract from row data]]
@@ -63,9 +63,12 @@ categorize
 	
 read sheet schedule
 GetSheetSchedule
+	** goes through each schedule from *schedules* to create the list of *sheets * (List<PdfDataEx>) 
+		depending on row type from prim schedule
 +> addPdfSch
 |  +> parseSheetSchedule ([*]validateIsSheetSchedule, getSheetSchTitles)
 |     +> parseSheetDataRows (addHeadings, addParentHeadings / ADD)
+|
 |  same at prime schedule
 |        +> parseDataRow (getRowType, getHeading, parseRowData [extract from row data])
 |           +> categorizePerRowType
@@ -76,3 +79,186 @@ GetSheetSchedule
 +> addPdfDoc (/ GETPDFFILE / ADD)
 
 
+
+schedules example
+SHT | seq->  0 | num-> CS01   | name> Cover Sheet         | hdr-> \General \Cover Sheet 
+SHT | seq->  1 | num-> T001   | name> Title Sheet         | hdr-> \General \Title Sheets 
+XLSX| seq->  2 | xls file-> Sheet List-civil.xlsx         | hdr-> 
+XLSX| seq->  3 | xls file-> Sheet List-landscape.xlsx     | hdr-> 
+XLSX| seq->  4 | xls file-> Sheet List-Architectural.xlsx | hdr-> 
+XLSX| seq->  5 | xls file-> Sheet List-structural.xlsx    | hdr-> 
+XLSX| seq->  6 | xls file-> Sheet List-Plumbing.xlsx      | hdr-> 
+PDF | seq->  7 | pdf file-> Electrical.pdf                | hdr-> \Electrical 
+XLSX| seq->  8 | xls file-> Sheet List-Mechanical.xlsx    | hdr-> 
+
+
+Phase 1 (Validate Destination File)      -> Worked
+file provided| C:\Users\jeffs\Documents\Programming\VisualStudioProjects\PDF SOLUTIONS\_Samples\Test\Primary-Sheet-Schedule.xlsx
+SHT | seq->  0 | num-> CS01   | name> Cover Sheet                                                         | hdr-> \General \Cover Sheet 
+SHT | seq->  1 | num-> T001   | name> Title Sheet                                                         | hdr-> \General \Title Sheets 
+XLSX| seq->  2 | xls filename-> Sheet List-Architectural.xlsx | pdf path-> \Sheet Files                  | hdr-> 
+PDF | seq->  3 | pdf file-> Electrical.pdf  
+
+
+
+sheets example
+1 |status-> EC_NO_ERROR |   num-> CS01    | name-> Cover Sheet                   | exist-> True  | file-> CS01 - Cover Sheet.pdf                       | hdg-> \General \Cover Sheet 
+1 |status-> EC_NO_ERROR |   num-> T001    | name-> Title Sheet                   | exist-> True  | file-> T001 - Title Sheet.pdf                       | hdg-> \General \Title Sheets 
+1 |status-> EC_NO_ERROR |   num-> C01     | name-> Cover Sheet                   | exist-> True  | file-> C01 - Cover Sheet.pdf                        | hdg-> \Civil-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> C02     | name-> Demolition Plan               | exist-> True  | file-> C02 - Demolition Plan.pdf                    | hdg-> \Civil-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> C03     | name-> Site Plan                     | exist-> True  | file-> C03 - Site Plan.pdf                          | hdg-> \Civil-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> L01     | name-> Cover Sheet                   | exist-> True  | file-> L01 - Cover Sheet.pdf                        | hdg-> \Landscape-Lands Arch Name 
+1 |status-> EC_NO_ERROR |   num-> L02     | name-> Planting Schedule             | exist-> True  | file-> L02 - Planting Schedule.pdf                  | hdg-> \Landscape-Lands Arch Name 
+1 |status-> EC_NO_ERROR |   num-> L03     | name-> Planting Plan                 | exist-> True  | file-> L03 - Planting Plan.pdf                      | hdg-> \Landscape-Lands Arch Name 
+1 |status-> EC_NO_ERROR |   num-> L04     | name-> Hardscape Plan                | exist-> True  | file-> L04 - Hardscape Plan.pdf                     | hdg-> \Landscape-Lands Arch Name 
+1 |status-> EC_NO_ERROR |   num-> A100    | name-> Site Vicinity                 | exist-> True  | file-> A100 - Site Vicinity.pdf                     | hdg-> \Architectural-Architect Name \Site 
+1 |status-> EC_NO_ERROR |   num-> A101    | name-> Site Plan                     | exist-> True  | file-> A101 - Site Plan.pdf                         | hdg-> \Architectural-Architect Name \Site 
+1 |status-> EC_NO_ERROR |   num-> A102    | name-> Plans                         | exist-> True  | file-> A102 - Plans.pdf                             | hdg-> \Architectural-Architect Name \Plans 
+1 |status-> EC_NO_ERROR |   num-> A103    | name-> Elevations/Sections           | exist-> True  | file-> A103 - Elevations - Sections.pdf             | hdg-> \Architectural-Architect Name \Elevations and Sections \Elevations 
+1 |status-> EC_NO_ERROR |   num-> A104    | name-> Elev./Sec./Det.               | exist-> True  | file-> A104 - Elev. - Sec. - Det..pdf               | hdg-> \Architectural-Architect Name \Elevations and Sections \Elevations 
+1 |status-> EC_NO_ERROR |   num-> A105    | name-> Building Sections             | exist-> True  | file-> A105 - Building Sections.pdf                 | hdg-> \Architectural-Architect Name \Elevations and Sections \Sections 
+1 |status-> EC_NO_ERROR |   num-> A106    | name-> Wall Sections                 | exist-> True  | file-> A106 - Wall Sections.pdf                     | hdg-> \Architectural-Architect Name \Elevations and Sections \Sections 
+1 |status-> EC_NO_ERROR |   num-> A107    | name-> Enlarged Bathroom Plan        | exist-> True  | file-> A107 - Enlarged Bathroom Plan.pdf            | hdg-> \Architectural-Architect Name \Enlarged Plans and Stairs 
+1 |status-> EC_NO_ERROR |   num-> A108    | name-> Stair #1 - Plans and Section  | exist-> True  | file-> A108 - Stair #1 - Plans and Section.pdf      | hdg-> \Architectural-Architect Name \Enlarged Plans and Stairs 
+1 |status-> EC_NO_ERROR |   num-> A109    | name-> Door and Room Schedules       | exist-> True  | file-> A109 - Door and Room Schedules.pdf           | hdg-> \Architectural-Architect Name \Schedules 
+1 |status-> EC_NO_ERROR |   num-> A110    | name-> Interior Details              | exist-> True  | file-> A110 - Interior Details.pdf                  | hdg-> \Architectural-Architect Name \Details 
+1 |status-> EC_NO_ERROR |   num-> A111    | name-> Exterior Details              | exist-> True  | file-> A111 - Exterior Details.pdf                  | hdg-> \Architectural-Architect Name \Details 
+1 |status-> EC_NO_ERROR |   num-> S01     | name-> Cover Sheet                   | exist-> True  | file-> S01 - Cover Sheet.pdf                        | hdg-> \Structural-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> S02     | name-> Typical Details               | exist-> True  | file-> S02 - Typical Details.pdf                    | hdg-> \Structural-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> S03     | name-> Foundation Plan               | exist-> True  | file-> S03 - Foundation Plan.pdf                    | hdg-> \Structural-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> S04     | name-> Framing Plan                  | exist-> True  | file-> S04 - Framing Plan.pdf                       | hdg-> \Structural-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> P01     | name-> Cover Sheet                   | exist-> True  | file-> P01 - Cover Sheet.pdf                        | hdg-> \Plumbing-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> P02     | name-> Plumbing Floor Plan           | exist-> True  | file-> P02 - Plumbing Floor Plan.pdf                | hdg-> \Plumbing-Engineer Name 
+5 |status-> EC_NO_ERROR | pages-> 5       | keep-> True                          | exist-> True  | file-> Electrical.pdf                               | hdg-> \Electrical 
+1 |status-> EC_NO_ERROR |   num-> M01     | name-> Cover Sheet                   | exist-> True  | file-> M01 - Cover Sheet.pdf                        | hdg-> \Mechanical-Engineer Name 
+1 |status-> EC_NO_ERROR |   num-> M02     | name-> Mechanical Floor Plan         | exist-> True  | file-> M02 - Mechanical Floor Plan.pdf              | hdg-> \Mechanical-Engineer Name 
+page count| 34
+
+
+
+pdf tree
+
+B  level| 1  | pg| 1  General
+B  level| 2  | pg| 1      Cover Sheet
+L       |    | pg| 1           CS01 - Cover Sheet                 | pg cnt| 1  | file| CS01 - Cover Sheet.pdf
+B  level| 2  | pg| 2      Title Sheets
+L       |    | pg| 2           T001 - Title Sheet                 | pg cnt| 1  | file| T001 - Title Sheet.pdf
+B  level| 1  | pg| 3  Civil-Engineer Name
+L       |    | pg| 3         C01 - Cover Sheet                    | pg cnt| 1  | file| C01 - Cover Sheet.pdf
+L       |    | pg| 4         C02 - Demolition Plan                | pg cnt| 1  | file| C02 - Demolition Plan.pdf
+L       |    | pg| 5         C03 - Site Plan                      | pg cnt| 1  | file| C03 - Site Plan.pdf
+B  level| 1  | pg| 6  Landscape-Lands Arch Name
+L       |    | pg| 6         L01 - Cover Sheet                    | pg cnt| 1  | file| L01 - Cover Sheet.pdf
+L       |    | pg| 7         L02 - Planting Schedule              | pg cnt| 1  | file| L02 - Planting Schedule.pdf
+L       |    | pg| 8         L03 - Planting Plan                  | pg cnt| 1  | file| L03 - Planting Plan.pdf
+L       |    | pg| 9         L04 - Hardscape Plan                 | pg cnt| 1  | file| L04 - Hardscape Plan.pdf
+B  level| 1  | pg| 10 Architectural-Architect Name
+B  level| 2  | pg| 10     Site
+L       |    | pg| 10          A100 - Site Vicinity               | pg cnt| 1  | file| A100 - Site Vicinity.pdf
+L       |    | pg| 11          A101 - Site Plan                   | pg cnt| 1  | file| A101 - Site Plan.pdf
+B  level| 2  | pg| 12     Plans
+L       |    | pg| 12          A102 - Plans                       | pg cnt| 1  | file| A102 - Plans.pdf
+B  level| 2  | pg| 13     Elevations and Sections
+B  level| 3  | pg| 13         Elevations
+L       |    | pg| 13            A103 - Elevations/Sections       | pg cnt| 1  | file| A103 - Elevations-Sections.pdf
+L       |    | pg| 14            A104 - Elev./Sec./Det.           | pg cnt| 1  | file| A104 - Elev.-Sec.-Det..pdf
+B  level| 3  | pg| 15         Sections
+L       |    | pg| 15            A105 - Building Sections         | pg cnt| 1  | file| A105 - Building Sections.pdf
+L       |    | pg| 16            A106 - Wall Sections             | pg cnt| 1  | file| A106 - Wall Sections.pdf
+B  level| 2  | pg| 17     Enlarged Plans and Stairs
+L       |    | pg| 17          A107 - Enlarged Bathroom Plan      | pg cnt| 1  | file| A107 - Enlarged Bathroom Plan.pdf
+L       |    | pg| 18          A108 - Stair #1 - Plans and Section| pg cnt| 1  | file| A108 - Stair #1 - Plans and Section.pdf
+B  level| 2  | pg| 19     Schedules
+L       |    | pg| 19          A109 - Door and Room Schedules     | pg cnt| 1  | file| A109 - Door and Room Schedules.pdf
+B  level| 2  | pg| 20     Details
+L       |    | pg| 20          A110 - Interior Details            | pg cnt| 1  | file| A110 - Interior Details.pdf
+L       |    | pg| 21          A111 - Exterior Details            | pg cnt| 1  | file| A111 - Exterior Details.pdf
+B  level| 1  | pg| 22 Structural-Engineer Name
+B  level| 2  | pg| 22     General
+L       |    | pg| 22          S01 - Cover Sheet                  | pg cnt| 1  | file| S01 - Cover Sheet.pdf
+L       |    | pg| 23        S02 - Typical Details                | pg cnt| 1  | file| S02 - Typical Details.pdf
+B  level| 2  | pg| 24     Plans
+L       |    | pg| 24          S03 - Foundation Plan              | pg cnt| 1  | file| S03 - Foundation Plan.pdf
+L       |    | pg| 25        S04 - Framing Plan                   | pg cnt| 1  | file| S04 - Framing Plan.pdf
+B  level| 1  | pg| 26 Plumbing-Engineer Name
+L       |    | pg| 26        P01 - Cover Sheet                    | pg cnt| 1  | file| P01 - Cover Sheet.pdf
+L       |    | pg| 27        P02 - Plumbing Floor Plan            | pg cnt| 1  | file| P02 - Plumbing Floor Plan.pdf
+F  level| 1  | pg| 28 Electrical                                  | pg cnt| 5  | file| Electrical.pdf
+N  level| 2  | pg| 28     E01 - Cover Sheet                       | pg cnt| 0  
+N  level| 2  | pg| 29     Electrical Plans                        | pg cnt| 0  
+N  level| 3  | pg| 29         E02 - Electrical Site Plan          | pg cnt| 0  
+N  level| 3  | pg| 30         duplicate bookmark 1                | pg cnt| 0  
+N  level| 3  | pg| 30         Floor Plans                         | pg cnt| 0  
+N  level| 4  | pg| 30             E03 - Electrical Floor Plan 1   | pg cnt| 0  
+N  level| 4  | pg| 31             Electrical Floor Plan 2         | pg cnt| 0  
+N  level| 3  | pg| 30         duplicate bookmark 2                | pg cnt| 0  
+N  level| 2  | pg| 32     Lighting Plans                          | pg cnt| 0  
+N  level| 3  | pg| 32         E05 - Lighting Plan                 | pg cnt| 0  
+N  level| 4  | pg| 30             duplicate bookmark 3            | pg cnt| 0  
+B  level| 1  | pg| 33 Mechanical-Engineer Name
+L       |    | pg| 33        M01 - Cover Sheet                    | pg cnt| 1  | file| M01 - Cover Sheet.pdf
+L       |    | pg| 34        M02 - Mechanical Floor Plan          | pg cnt| 1  | file| M02 - Mechanical Floor Plan.pdf
+
+
+*** show pdf node tree ***
+A type| PT_BRANCH     | pg|   1|                | list count|  2|               bkmrk| General
+A type| PT_BRANCH     | pg|   1|                | list count|  1|               bkmrk| Cover Sheet
+B type| PT_LEAF       | pg|   1| sht num| CS01  | list count|  0| pg count|  1| bkmrk| CS01 - Cover Sheet
+A type| PT_BRANCH     | pg|   2|                | list count|  1|               bkmrk| Title Sheets
+B type| PT_LEAF       | pg|   2| sht num| T001  | list count|  0| pg count|  1| bkmrk| T001 - Title Sheet
+A type| PT_BRANCH     | pg|   3|                | list count|  3|               bkmrk| Civil-Engineer Name
+B type| PT_LEAF       | pg|   3| sht num| C01   | list count|  0| pg count|  1| bkmrk| C01 - Cover Sheet
+B type| PT_LEAF       | pg|   4| sht num| C02   | list count|  0| pg count|  1| bkmrk| C02 - Demolition Plan
+B type| PT_LEAF       | pg|   5| sht num| C03   | list count|  0| pg count|  1| bkmrk| C03 - Site Plan
+A type| PT_BRANCH     | pg|   6|                | list count|  4|               bkmrk| Landscape-Lands Arch Name
+B type| PT_LEAF       | pg|   6| sht num| L01   | list count|  0| pg count|  1| bkmrk| L01 - Cover Sheet
+B type| PT_LEAF       | pg|   7| sht num| L02   | list count|  0| pg count|  1| bkmrk| L02 - Planting Schedule
+B type| PT_LEAF       | pg|   8| sht num| L03   | list count|  0| pg count|  1| bkmrk| L03 - Planting Plan
+B type| PT_LEAF       | pg|   9| sht num| L04   | list count|  0| pg count|  1| bkmrk| L04 - Hardscape Plan
+A type| PT_BRANCH     | pg|  10|                | list count|  6|               bkmrk| Architectural-Architect Name
+A type| PT_BRANCH     | pg|  10|                | list count|  2|               bkmrk| Site
+B type| PT_LEAF       | pg|  10| sht num| A100  | list count|  0| pg count|  1| bkmrk| A100 - Site Vicinity
+B type| PT_LEAF       | pg|  11| sht num| A101  | list count|  0| pg count|  1| bkmrk| A101 - Site Plan
+A type| PT_BRANCH     | pg|  12|                | list count|  1|               bkmrk| Plans
+B type| PT_LEAF       | pg|  12| sht num| A102  | list count|  0| pg count|  1| bkmrk| A102 - Plans
+A type| PT_BRANCH     | pg|  13|                | list count|  2|               bkmrk| Elevations and Sections
+A type| PT_BRANCH     | pg|  13|                | list count|  2|               bkmrk| Elevations
+B type| PT_LEAF       | pg|  13| sht num| A103  | list count|  0| pg count|  1| bkmrk| A103 - Elevations/Sections
+B type| PT_LEAF       | pg|  14| sht num| A104  | list count|  0| pg count|  1| bkmrk| A104 - Elev./Sec./Det.
+A type| PT_BRANCH     | pg|  15|                | list count|  2|               bkmrk| Sections
+B type| PT_LEAF       | pg|  15| sht num| A105  | list count|  0| pg count|  1| bkmrk| A105 - Building Sections
+B type| PT_LEAF       | pg|  16| sht num| A106  | list count|  0| pg count|  1| bkmrk| A106 - Wall Sections
+A type| PT_BRANCH     | pg|  17|                | list count|  2|               bkmrk| Enlarged Plans and Stairs
+B type| PT_LEAF       | pg|  17| sht num| A107  | list count|  0| pg count|  1| bkmrk| A107 - Enlarged Bathroom Plan
+B type| PT_LEAF       | pg|  18| sht num| A108  | list count|  0| pg count|  1| bkmrk| A108 - Stair #1 - Plans and Section
+A type| PT_BRANCH     | pg|  19|                | list count|  1|               bkmrk| Schedules
+B type| PT_LEAF       | pg|  19| sht num| A109  | list count|  0| pg count|  1| bkmrk| A109 - Door and Room Schedules
+A type| PT_BRANCH     | pg|  20|                | list count|  2|               bkmrk| Details
+B type| PT_LEAF       | pg|  20| sht num| A110  | list count|  0| pg count|  1| bkmrk| A110 - Interior Details
+B type| PT_LEAF       | pg|  21| sht num| A111  | list count|  0| pg count|  1| bkmrk| A111 - Exterior Details
+A type| PT_BRANCH     | pg|  22|                | list count|  4|               bkmrk| Structural-Engineer Name
+A type| PT_BRANCH     | pg|  22|                | list count|  1|               bkmrk| General
+B type| PT_LEAF       | pg|  22| sht num| S01   | list count|  0| pg count|  1| bkmrk| S01 - Cover Sheet
+B type| PT_LEAF       | pg|  23| sht num| S02   | list count|  0| pg count|  1| bkmrk| S02 - Typical Details
+A type| PT_BRANCH     | pg|  24|                | list count|  1|               bkmrk| Plans
+B type| PT_LEAF       | pg|  24| sht num| S03   | list count|  0| pg count|  1| bkmrk| S03 - Foundation Plan
+B type| PT_LEAF       | pg|  25| sht num| S04   | list count|  0| pg count|  1| bkmrk| S04 - Framing Plan
+A type| PT_BRANCH     | pg|  26|                | list count|  2|               bkmrk| Plumbing-Engineer Name
+B type| PT_LEAF       | pg|  26| sht num| P01   | list count|  0| pg count|  1| bkmrk| P01 - Cover Sheet
+B type| PT_LEAF       | pg|  27| sht num| P02   | list count|  0| pg count|  1| bkmrk| P02 - Plumbing Floor Plan
+F type| PT_NODE_FILE  | pg|  28|                | list count|  3| pg count|  5| bkmrk| Electrical
+E type| PT_NODE       | pg|  28| * est pg bkmk  | list count|  0| pg count|  0| bkmrk| E01 - Cover Sheet  (E01 - Cover Sheet)
+E type| PT_NODE       | pg|  29| bkmk only      | list count|  4| pg count|  0| bkmrk| Electrical Plans  
+E type| PT_NODE       | pg|  29| * est pg bkmk  | list count|  0| pg count|  0| bkmrk| E02 - Electrical Site Plan  (E02 - Electrical Site Plan)
+E type| PT_NODE       | pg|  30| bkmk only      | list count|  0| pg count|  0| bkmrk| duplicate bookmark 1  
+E type| PT_NODE       | pg|  30| bkmk only      | list count|  2| pg count|  0| bkmrk| Floor Plans  
+E type| PT_NODE       | pg|  30| * est pg bkmk  | list count|  0| pg count|  0| bkmrk| E03 - Electrical Floor Plan 1  (E03 - Electrical Floor Plan 1)
+E type| PT_NODE       | pg|  31| bkmk only      | list count|  0| pg count|  0| bkmrk| Electrical Floor Plan 2  
+E type| PT_NODE       | pg|  30| bkmk only      | list count|  0| pg count|  0| bkmrk| duplicate bookmark 2  
+E type| PT_NODE       | pg|  32| bkmk only      | list count|  1| pg count|  0| bkmrk| Lighting Plans  
+E type| PT_NODE       | pg|  32| * est pg bkmk  | list count|  1| pg count|  0| bkmrk| E05 - Lighting Plan  (E05 - Lighting Plan)
+E type| PT_NODE       | pg|  30| bkmk only      | list count|  0| pg count|  0| bkmrk| duplicate bookmark 3  
+A type| PT_BRANCH     | pg|  33|                | list count|  2|               bkmrk| Mechanical-Engineer Name
+B type| PT_LEAF       | pg|  33| sht num| M01   | list count|  0| pg count|  1| bkmrk| M01 - Cover Sheet
+B type| PT_LEAF       | pg|  34| sht num| M02   | list count|  0| pg count|  1| bkmrk| M02 - Mechanical Floor Plan
+*** show pdf node tree done ***

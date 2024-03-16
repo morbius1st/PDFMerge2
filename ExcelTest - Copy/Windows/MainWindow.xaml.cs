@@ -21,7 +21,7 @@ using SharedPdfCode.ShCode;
 using UtilityLibrary;
 using static SharedCode.ShCode.Status.StatusData;
 using iText.StyledXmlParser.Jsoup.Internal;
-
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 
 namespace ExcelTest.Windows
@@ -413,16 +413,30 @@ namespace ExcelTest.Windows
 
 		private void BtnGetPrimeFile_OnClick(object sender, RoutedEventArgs e)
 		{
-			var d = new Microsoft.Win32.OpenFileDialog();
+
+			//var d = new Microsoft.Win32.OpenFileDialog();
+			//d.InitialDirectory = primeFilePath.FolderPath;
+			//d.Multiselect = false;
+			//d.Title = "Select Primary Schedule File";
+			//// d.ShowHiddenItems = false;
+			//d.Filter = $"Excel Schedule|*{PrimeFileExt}";
+
+			//bool? result = d.ShowDialog() ;
+
+			//if (result == true)
+			//{
+			//	setPrimFilePath( d.FileName);
+			//}
+
+			CommonOpenFileDialog d = new CommonOpenFileDialog();
+			d.IsFolderPicker = false;
 			d.InitialDirectory = primeFilePath.FolderPath;
 			d.Multiselect = false;
 			d.Title = "Select Primary Schedule File";
 			d.ShowHiddenItems = false;
-			d.Filter = $"Excel Schedule|*{PrimeFileExt}";
+			d.Filters.Add(new CommonFileDialogFilter("Excel Schedule", $"{PrimeFileExt}"));
 
-			bool? result = d.ShowDialog() ;
-
-			if (result == true)
+			if (d.ShowDialog(this) == CommonFileDialogResult.Ok)
 			{
 				setPrimFilePath( d.FileName);
 			}
@@ -452,19 +466,35 @@ namespace ExcelTest.Windows
 
 		private void BtnGetDestFolder_OnClick(object sender, RoutedEventArgs e)
 		{
-			var d = new Microsoft.Win32.OpenFolderDialog();
 
+			/*
+			var d = new Microsoft.Win32.OpenFolderDialog();
+			
 			d.InitialDirectory = primeFilePath.FolderPath; // start at the same location
 			d.Multiselect = false;
 			d.Title = "Select Destination Folder";
 			d.ShowHiddenItems = false;
-
+			
 			bool? result = d.ShowDialog() ;
-
+			
 			if (result == true)
 			{
 				W.DestFolder = d.FolderName;
 			}
+			*/
+
+			CommonOpenFileDialog d = new CommonOpenFileDialog();
+			d.IsFolderPicker = true;
+			d.InitialDirectory = primeFilePath.FolderPath;
+			d.Multiselect = false;
+			d.Title = "Select Destination Folder";
+			d.ShowHiddenItems = false;
+
+			if (d.ShowDialog(this) == CommonFileDialogResult.Ok)
+			{
+				W.DestFolder = d.FileName;
+			}
+
 		}
 
 
@@ -719,7 +749,7 @@ namespace ExcelTest.Windows
 
 		// tests
 
-		
+		/*
 		private void getFile()
 		{
 			
@@ -743,16 +773,16 @@ namespace ExcelTest.Windows
 			x.Multiselect = false;
 			x.Title = "Select Initial Folder";
 			x.ShowHiddenItems = false;
-
+			
 			result = x.ShowDialog();
-
+			
 			if (result == true)
 			{
 				M.WriteLine($"got folder| {x.FolderName}");
 			}
 
 		}
-
+		*/
 
 		private void BtnProcessXlsx_OnClick(object sender, RoutedEventArgs e)
 		{
@@ -824,10 +854,12 @@ namespace ExcelTest.Windows
 			M.WriteLine("Updating interface not async");
 		}
 
+		/*
 		private void BtnFileDialogs_OnClick(object sender, RoutedEventArgs e)
 		{
 			getFile();
 		}
+		*/
 
 		private void Tbx_PreviewMouseUp(object sender, RoutedEventArgs e)
 		{

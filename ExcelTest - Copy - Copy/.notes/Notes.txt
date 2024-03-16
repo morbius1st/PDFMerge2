@@ -1,0 +1,78 @@
+﻿
+Schedule notes
+
+
+two types of schedules (but both have, basically, the same format and are parsed the same
+primary schedule (identifies sheet data, sheet schedule files, or pdf files to include in the collection)
+sheet schedule (identifies sheet data to include in the collection)
+
+three data row types
+sheet		pdf sheet (single pdf file)		-> PdfShtData  (must be single page - do not include existing bookmarks))
+pdf			pdf doc (pdf collection)		-> PdfDocData (single or multiple page - either include or not existing bookmarks)
+list		pdf schedule (xlsx file)		-> PdfSchData  (xlsx file of pdf sheets [& pdf doc's & pdf schedules - primary only])
+
+other data row types
+heading		defines a heading for the rows that follow
+[*]			file type / primary heading (when the first valid row [non-blank and non comment])
+[*]			defines column titles
+
+other row types
+'blank'		defines a row to ignore
+<<			defines a comment row
+
+"parent" handling
+read from a sheet schedule
+becomes the first heading for every sheet in the file
+
+(*) sets schTypeName  (verify)
+
+
+schedule title processing
+(T0)	part 0: define column titles  => colData.ColumnTitles2
+(T1)	part 1: parse the column titles
+(T1A)		A: prim schedule			=> parseSchTitles => into schColTitleData
+(T1B)		B: each sheet schedule		=> parseSchTitles => into schColTitleData
+(T2)	part 2: validate column titles (headers must match)
+(T2A)		A: prim schedule			=> getSchTitles			=> validateSchTitles()
+(T2B)		B: each sheet schedule		=> getSheetSchTitles	=> validateSchTitles()
+(T3)	part 3: validate that all required column titles exist - once per row type (do not check headers)
+(T3A)		A: prim schedule			=> parseDataRow			=> validateDataRowTitles(rt) [validateTitle]
+(T3B)		B: each sheet schedule		=> parseDataRow			=> validateDataRowTitles(rt) [validateTitle]
+
+title checking methods:
+
+validateSchTitles
+validateDataRowTitles
+
+
+read primary schedule
+GetSchedule(file)
++> parseSchData  [(*)validateSchType]
+	+> getSchTitles
+	|	+> parseSchTitles [read from data collection]
+	|	+> validateSchTitles [check that every column title read matches - since row type are optional, cannot determine if all req'd are provided]
+	+> parseSchDataRows [/ADD]
+
+same as sheet schedule
+	    +> parseDataRow [getRowType, getHeading, parseRowData [extract from row data]]
+			+> validateDataRowTitles
+	        +> categorizePerRowType
+	        +> getPdfDataObj
+	
+categorize 
+	
+read sheet schedule
+GetSheetSchedule
++> addPdfSch
+|  +> parseSheetSchedule ([*]validateIsSheetSchedule, getSheetSchTitles)
+|     +> parseSheetDataRows (addHeadings, addParentHeadings / ADD)
+|  same at prime schedule
+|        +> parseDataRow (getRowType, getHeading, parseRowData [extract from row data])
+|           +> categorizePerRowType
+|              +> getPdfDataObj
+|
++> addPdfSheet (/SETVALUES / ADD)
+|  
++> addPdfDoc (/ GETPDFFILE / ADD)
+
+

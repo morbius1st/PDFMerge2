@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using ExcelTest.Windows;
-using SharedCode.ShCode;
+using CommonCode.ShCode;
 
-using SharedPdfCode.PdfLibrary;
+using CommonPdfCodePdfLibrary;
 using UtilityLibrary;
 using static ExcelTest.SheetSchedule.ColumnSubject;
 
-using static SharedCode.ShCode.Status.StatusData;
+using static CommonCode.ShCode.Status.StatusData;
 
 // using static ExcelTest.SheetSchedule.PdfDataStatus;
 
@@ -23,32 +23,33 @@ public class PdfShtData : IPdfDataEx
 {
 	private string bookmarkFormat = "{0} - {1}";
 
-	public int Sequence { get; set; }
-	public RowType RowType { get; } = RowType.RT_SHEET;
-	public List<string?>? Headings { get; set; }
-	public bool KeepBookmarks => false;
-	public string? PdfPath { get; private set; }
-	public string? SheetNumber { get; private set; }
-	public string? SheetName { get; private set; }
+	public int                           Sequence { get; set; }
+	public RowType                       RowType { get; } = RowType.RT_SHEET;
+	public List<string?>?                Headings { get; set; }
+	public bool                          KeepBookmarks => false;
+	public string?                       PdfPath { get; private set; }
+	public string?                       SheetNumber { get; private set; }
+	public string?                       SheetName { get; private set; }
 
-	// public PdfDataStatus Status { get; private set; }
-	public ErrorCodes Status { get; private set; }
+	// public                            PdfDataStatus Status { get; private set; }
+	public ErrorCodes                    Status { get; private set; }
 
-	public IFilePath File { get; private set; }
-	public bool FileExists => File.Exists;
+	public IFilePath                     File { get; private set; }
+	public FilePath<FileNameAsSheetFile> FileEx => (FilePath<FileNameAsSheetFile>) File;
+	public bool                          FileExists => File.Exists;
 
-	public PdfSchData Parent { get; private set; }
+	public PdfSchData                    Parent { get; private set; }
 
-	public string? FilePath => File.FullFilePath;
-	public PdfFile PdfFile { get; private set; }
+	public string?                       FilePath => File.FullFilePath;
+	public PdfFile                       PdfFile { get; private set; }
 
-	public int PageCount => (PdfFile?.File?.Exists ?? false) ? PdfFile.PageCount : 0; 
+	public int                           PageCount => (PdfFile?.File?.Exists ?? false) ? PdfFile.PageCount : 0; 
 
-	public string Bookmark => string.Format(bookmarkFormat, SheetNumber, SheetName);
-	public string BookmarkFormat
+	public string                        Bookmark => string.Format(bookmarkFormat, SheetNumber, SheetName);
+	public string                        BookmarkFormat
 	{
-		get => bookmarkFormat;
-		private set => bookmarkFormat = value;
+		get =>                           bookmarkFormat;
+		private                          set => bookmarkFormat = value;
 	}
 
 	public PdfShtData()
@@ -85,7 +86,7 @@ public class PdfShtData : IPdfDataEx
 		{
 			FilePath<FileNameAsSheetFile> f = new (filePath);
 
-			f.FileNameObject.InvalidNameReplacementChars = new [] { " - " };
+			f.FileNameObject.InvalidNameReplacementChars = new [] { "-" };
 
 			string fileName = $"{SheetNumber} - {SheetName}";
 

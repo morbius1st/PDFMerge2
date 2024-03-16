@@ -67,16 +67,16 @@ namespace ExcelTest.SheetSchedule
 		public const int MAX_TITLE_LEN = 9;
 
 		public static readonly string RT_HEADING_S = RowType.RT_HEADING.ToString().Trim().Substring(3).ToLower();
-		public static readonly string RT_LIST_S = RowType.RT_LIST.ToString().Trim().Substring(3).ToLower();
-		public static readonly string RT_SHEET_S = RowType.RT_SHEET.ToString().Trim().Substring(3).ToLower();
-		public static readonly string RT_PDF_S = RowType.RT_PDF.ToString().Trim().Substring(3).ToLower();
+		public static readonly string RT_LIST_S    = RowType.RT_LIST.ToString().Trim().Substring(3).ToLower();
+		public static readonly string RT_SHEET_S   = RowType.RT_SHEET.ToString().Trim().Substring(3).ToLower();
+		public static readonly string RT_PDF_S     = RowType.RT_PDF.ToString().Trim().Substring(3).ToLower();
 
 		public static readonly Dictionary<string, RowType> RowTypeList = new ()
 		{
 			{ RT_HEADING_S, RT_HEADING },
-			{ RT_LIST_S, RT_LIST },
-			{ RT_SHEET_S, RT_SHEET },
-			{ RT_PDF_S, RT_PDF }
+			{ RT_LIST_S   , RT_LIST },
+			{ RT_SHEET_S  , RT_SHEET },
+			{ RT_PDF_S    , RT_PDF }
 		};
 
 		public static int ColumnIdx { get; set; } = 0;
@@ -110,7 +110,7 @@ namespace ExcelTest.SheetSchedule
 
 			ColumnTitles = new List<ColumnTitle>(10);
 			//                                                                                (0)  list    (1) sheet      (2) pdf      var
-			ColumnTitles.Add(new ColumnTitle(CS_TYPE,       CF_STRING, "[type]"              , CT_REQD,     CT_REQD,      CT_REQD,     false));
+			ColumnTitles.Add(new ColumnTitle(CS_TYPE,       CF_STRING, "[type]"              , CT_REQD,     CT_IGNORE,    CT_REQD,     false));
 			ColumnTitles.Add(new ColumnTitle(CS_HEADING,    CF_STRING, "[heading-{0}]"       , CT_REQD,     CT_REQD,      CT_REQD,     true));
 			ColumnTitles.Add(new ColumnTitle(CS_X_REL_PATH, CF_STRING, "[xlsx relative path]", CT_OPTIONAL, CT_IGNORE,    CT_OPTIONAL, false));
 			ColumnTitles.Add(new ColumnTitle(CS_FILE_NAME,  CF_STRING, "[file name]"         , CT_REQD,     CT_IGNORE,    CT_REQD,     false));

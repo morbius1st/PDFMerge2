@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>8c7fa9ad-f52b-4e37-b841-27fedabf86ea</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>CommonCode</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory).Linked\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ShCode\IMainWin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShCode\M.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShCode\Status.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShCode\W.cs" />
+
+		<Compile Include="\\CRONOS\Users\jeffs\Documents\Programming\VisualStudioProjects\UtilityLibrary\UtilityLibrary\FilePath\V3.1\CsFilePath.cs">
+			<Link>.Linked\CsFilePath.cs</Link>
+		</Compile>		
+		<Compile Include="\\CRONOS\Users\jeffs\Documents\Programming\VisualStudioProjects\UtilityLibrary\UtilityLibrary\CsUtilities.cs">
+			<Link>.Linked\CsUtilities.cs</Link>
+		</Compile>		
+		<Compile Include="\\CRONOS\Users\jeffs\Documents\Programming\VisualStudioProjects\UtilityLibrary\UtilityLibrary\CsExtensions.cs">
+			<Link>.Linked\CsExtensions.cs</Link>
+		</Compile>	
+		<Compile Include="\\CRONOS\Users\jeffs\Documents\Programming\VisualStudioProjects\UtilityLibrary\UtilityLibrary\CsXmlUtilities.cs">
+			<Link>.Linked\CsXmlUtilities.cs</Link>
+		</Compile>	
+  </ItemGroup>
+</Project>

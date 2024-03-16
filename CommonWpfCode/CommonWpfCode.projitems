@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>ec57fcd5-6dc1-4ba2-b0b2-f4256beac1d6</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>CommonWpfCode</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)ShWpf\" />
+    <Folder Include="$(MSBuildThisFileDirectory)ShSupport\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="\\CRONOS\Users\jeffs\Documents\Programming\VisualStudioProjects\UtilityLibrary\Templates\C#\TemplatesProject\WPF\BOD\WpfProject02\SharedWPF\ShSupport\CsButtonsAp.cs">
+      <Link>ShSupport\CsButtonsAp.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="\\CRONOS\Users\jeffs\Documents\Programming\VisualStudioProjects\UtilityLibrary\Templates\C#\TemplatesProject\WPF\BOD\WpfProject02\SharedWPF\ShSupport\CsButtons.xaml" Link="ShSupport\CsButtons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>

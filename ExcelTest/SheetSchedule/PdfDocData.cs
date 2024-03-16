@@ -1,7 +1,7 @@
 ﻿#region + Using Directives
-using SharedCode.ShCode;
+using CommonCode.ShCode;
 
-using SharedPdfCode.PdfLibrary;
+using CommonPdfCodePdfLibrary;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UtilityLibrary;
 using static ExcelTest.SheetSchedule.ColumnSubject;
-using static SharedCode.ShCode.Status.StatusData;
+using static CommonCode.ShCode.Status.StatusData;
 
 #endregion
 
@@ -23,22 +23,22 @@ namespace ExcelTest.SheetSchedule
 	{
 		public PdfFile PdfFile { get; set; }
 
-		public int Sequence { get; set; }
-		public RowType RowType { get; } = RowType.RT_PDF;
-		public List<string?>? Headings { get; set;}
-		public bool KeepBookmarks { get; private set;}
+		public int                          Sequence { get; set; }
+		public RowType                      RowType { get; } = RowType.RT_PDF;
+		public List<string?>?               Headings { get; set;}
+		public bool                         KeepBookmarks { get; private set;}
 
-		// public PdfDataStatus Status { get; private set; }
+		// public                           PdfDataStatus Status { get; private set; }
 		public Status.StatusData.ErrorCodes Status { get; private set; }
 
-		public string? PdfPath { get; private set; }
+		public string?                      PdfPath { get; private set; }
 
-		public IFilePath File => PdfFile.File;
-		public string? FilePath { get; private set;}
+		public IFilePath                    File => PdfFile.File;
+		public string?                      FilePath { get; private set;}
 
-		public int PageCount => (PdfFile?.File?.Exists ?? false) ? PdfFile.PageCount : 0; 
+		public int                          PageCount => (PdfFile?.File?.Exists ?? false) ? PdfFile.PageCount : 0; 
 
-		public string Bookmark => Headings?[^1] ?? "null";
+		public string                       Bookmark => Headings?[^1] ?? "null";
 
 		public PdfDocData()
 		{
@@ -88,7 +88,6 @@ namespace ExcelTest.SheetSchedule
 
 			return true;
 		}
-
 
 		public bool SetValue(ColumnSubject cs, string value)
 		{

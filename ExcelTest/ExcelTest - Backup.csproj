@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <Title>Josh</Title>
+    <PackageId>pro.cyberstudio.josh</PackageId>
+    <Authors>Jeff Stuyvesant</Authors>
+    <Company>Cyberstudio</Company>
+    <Product>Josh</Product>
+    <Description>Assembler of Files into a Combined PDF with bookmarks</Description>
+    <Copyright>Copyright (C) 2024</Copyright>
+    <ApplicationIcon>CyberStudio Logo.ico</ApplicationIcon>
+    <AssemblyName>Josh</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);USER_SETTINGS</DefineConstants>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);USER_SETTINGS</DefineConstants>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="SheetSchedule\PdfFileTree.cs" />
+    <Compile Remove="Windows\M.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\UtilityLibrary\UtilityLibrary\CsStringUtil.cs" Link=".Linked\CsStringUtil.cs" />
+    <Compile Include="..\..\..\UtilityLibrary\UtilityLibrary\SettingManager\v7.4\SettingsMgr.cs" Link=".Linked\SettingsMgr.cs" />
+    <Compile Include=".Settings\AppSettings.cs" />
+    <Compile Include=".Settings\DataSet.cs" />
+    <Compile Include=".Settings\HeadingSetting.cs" />
+    <Compile Include=".Settings\MachineSettings.cs" />
+    <Compile Include=".Settings\SiteSettings.cs" />
+    <Compile Include=".Settings\SuiteSettings.cs" />
+    <Compile Include=".Settings\UserSettings.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".notes\Notes.txt" />
+    <Content Include="CyberStudio Logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExcelDataReader.DataSet" Version="3.6.0" />
+    <PackageReference Include="itext7" Version="8.0.2" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.2" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include=".Linked\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <Import Project="..\CommonCode\CommonCode.projitems" Label="Shared" />
+
+  <Import Project="..\CommonPdfCode\CommonPdfCode.projitems" Label="Shared" />
+
+</Project>

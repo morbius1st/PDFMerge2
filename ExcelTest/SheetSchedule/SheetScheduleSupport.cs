@@ -8,11 +8,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Security.Cryptography.Core;
-using ABI.Windows.Foundation.Collections;
+
 using ExcelTest.Excel;
 using ExcelTest.Windows;
 using iText.Commons.Utils;
@@ -23,12 +23,16 @@ using static ExcelTest.SheetSchedule.ColumnFormat;
 using static ExcelTest.SheetSchedule.ColumnSubject;
 using static ExcelTest.SheetSchedule.RowType;
 using iText.Kernel.Pdf.Tagging;
-using SharedCode.ShCode;
-using SharedPdfCode.PdfLibrary;
-using SharedPdfCode.ShCode;
+using CommonCode.ShCode;
+using CommonPdfCodePdfLibrary;
+using CommonPdfCodeShCode;
 using UtilityLibrary;
-using static SharedCode.ShCode.M;
-using static SharedCode.ShCode.Status.StatusData;
+using static CommonCode.ShCode.M;
+using static CommonCode.ShCode.Status.StatusData;
+using System.Windows.Markup;
+using System.Xml;
+using SettingsManager;
+using DataSet = System.Data.DataSet;
 
 #endregion
 
@@ -44,7 +48,7 @@ namespace ExcelTest.SheetSchedule
 		// general
 
 		public const string COMMENT = "<<";
-		public const string COL_TITLE = "[";
+		public const string COL_TITLE_PREFACE = "[";
 
 		private const string PRIME_SCHEDULE = "[primary schedule]";
 		private const string SHEET_SCHEDULE = "[sheet schedule]";
@@ -76,9 +80,9 @@ namespace ExcelTest.SheetSchedule
 		/// </summary>
 		private Dictionary<int, colValue>? colInfo;
 
-		private int colValueIdx = 0;
-
 		private Dictionary<int, string?>? headerInfo;
+
+		private int colValueIdx = 0;
 
 		// private string? priorHeader = null;
 		// private string? priorSubPath = null;
@@ -109,6 +113,8 @@ namespace ExcelTest.SheetSchedule
 		// private string xlsxFileName;
 
 		private string fileBeingParsed;
+
+		private bool parsingPrimary = false;
 
 		// properties
 
@@ -187,9 +193,10 @@ namespace ExcelTest.SheetSchedule
 
 	#endregion
 
-	#region get destination file
+	#region 1 - get destination file
 
-// phase VD
+// STEP 1
+// phase VD - validate desitnation
 		public bool ValidateDestFile(FilePath<FileNameSimple>? dest, bool overwriteOk)
 		{
 			Status.Phase = Progress.PS_PH_VD;
@@ -245,10 +252,792 @@ namespace ExcelTest.SheetSchedule
 
 	#endregion
 
+	#region 2 - PrimaryScheduleData
 
-	#region validate methods
+// STEP 2
+// phase PP - read the primary schedule
+		public bool GetSchedule(
+			FilePath<FileNameSimple> file)
+		{
+			Status.Phase = Progress.PS_PH_PP;
 
-// phase VS
+			W.PbStatValue = (int) Progress.PS_PH_PP;
+
+			W.PbarPhaseReset();
+
+			bool status = true;
+			parsingPrimary = true;
+
+			fileBeingParsed = file.FileName;
+
+			if (file == null || !file.Exists
+				|| !file.FileExtensionNoSep.Equals(MainWindow.EXT_XLSX))
+			{
+				Status.SetStatus(
+					ErrorCodes.EC_PP_FILE_MISSING_PRIME,
+					Overall.OS_FAIL, file?.FullFilePath ?? "No file specified");
+				status = false;
+			}
+			else
+			{
+				rootPath = file.FolderPath;
+
+				schedules = new List<IPdfData?>();
+
+				// read schedule to a dataset
+				DataSet schedule = xls.ReadSchedule(file);
+
+				// parse the dataset into the List<>
+				if (!parseSchData(schedule))
+				{
+					Status.SetStatus(
+						ErrorCodes.EC_PP_SCHED_WRONG_FORMAT,
+						Overall.OS_FAIL);
+					status = false;
+				}
+				else
+				{
+					Status.SetStatus(ErrorCodes.EC_NO_ERROR, Overall.OS_WORKED);
+					W.PbPhaseValue++;
+				}
+			}
+
+			// M.WriteLine($"file provided| {file.FullFilePath}");
+			//
+			// showPrimeSchedule();
+			// status = false;
+
+			return status;
+		}
+
+		// process primary schedule
+
+		private bool parseSchData(DataSet xlSchedule)
+		{
+			// Status.IsGoodLocalSet = true;
+			bool status = true;
+
+			DataRowCollection rows = xlSchedule.Tables[0].Rows;
+
+			W.PbPhaseMax = rows.Count + 1;
+			W.PbPhaseValue = 1;
+
+			int row = validateSchType(rows, PRIME_SCHEDULE);
+
+			if (row == -1)
+			{
+				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_WRONG_TYPE,
+					Overall.OS_FAIL, $"{fileBeingParsed}");
+
+				return false;
+			}
+
+			row = getSchTitles(rows, row);
+
+			if (row == -1)
+			{
+				return false;
+			}
+
+			parentSch = new PdfSchData();
+
+			if (parseSchDataRows(row, rows) == 0)
+			{
+				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_EMPTY,
+					Overall.OS_FAIL, $"{fileBeingParsed}");
+				return false;
+			}
+
+			return status;
+		}
+
+		private int getSchTitles(DataRowCollection rows, int startRow)
+		{
+			string? field0;
+
+			for (int i = startRow; i < rows.Count; i++)
+			{
+				DataRow r = rows[i];
+
+				W.PbPhaseValue++;
+
+				field0 = (r.Field<string>(0) ?? "");
+
+				if (field0.IsVoid() || field0.Trim().StartsWith(COMMENT)) continue;
+
+				// if (!parseSchTitles(r)) break;
+				parseSchTitles(r);
+
+				if (validateSchTitles())
+				{
+					return i;
+				}
+
+				break;
+			}
+
+			return -1;
+		}
+
+		private bool validateSchTitles()
+		{
+			string? search = null;
+			string? reqd = null;
+			string? found = null;
+
+			int len;
+			int i = 1;
+
+			// Status.IsGoodLocalSet = true;
+			bool status = true;
+
+			if (schColTitleData.Count == 0) return false;
+
+			if (parsingPrimary && schColTitleData[0].ColumnSubject != CS_TYPE) return false;
+
+			foreach (ColumnTitle ct in schColTitleData)
+			{
+				len = ct.Heading.Length;
+				len = len > ColumnData.MAX_TITLE_LEN ? ColumnData.MAX_TITLE_LEN : len;
+				search = ct.Heading.Substring(0, len);
+				found = ct.Heading;
+				reqd = colData.ColumnTitles2[search].Heading;
+
+				if (ct.IsVariableQty)
+				{
+					reqd = string.Format(reqd, i++);
+				}
+				else
+				{
+					i = 1;
+				}
+
+				if (reqd.Equals(found)) continue;
+
+				// heading does not match
+
+				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_WRONG_TITLES,
+					Overall.OS_WARNING, $"{fileBeingParsed}| found| {found}");
+
+				status = false;
+			}
+
+			return status;
+		}
+
+		// parse each data row
+		private int parseSchDataRows(int startRow, DataRowCollection rows)
+		{
+			int r = 0; // row index
+			int i = 0;
+
+			IPdfData? item;
+
+			colInfo = new Dictionary<int, colValue>();
+			colValueIdx = 0;
+
+			// process each data row
+			for (r = startRow; r < rows.Count; r++)
+			{
+				DataRow d = rows[r];
+
+				// increment the progress bar
+				W.PbPhaseValue++;
+
+				item = parseDataRow(d);
+
+				if (item == null) continue;
+
+				item.Sequence = i++;
+
+				if (item.RowType != RT_LIST) addHeadings(item);
+
+				schedules.Add(item);
+
+				colInfo = new Dictionary<int, colValue>();
+				colValueIdx = 0;
+			}
+
+			return schedules!.Count;
+		}
+
+		// debug routines
+
+		/*
+		private void testScheduleTitles(DataRow r)
+		{
+
+			M.WriteLine("Original process method\n");
+			getScheduleTitles(r);
+
+			showSchColData();
+
+			schColData = new List<ColumnTitle>();
+
+			M.WriteLine("\n\nNew process method\n");
+			getScheduleTitles2(r);
+
+			showSchColData();
+		}
+		*/
+
+		private void showPrimeSchedule()
+		{
+			// M.WriteLine("this is a test");
+
+			foreach (IPdfData sch in schedules)
+			{
+				if (sch.RowType == RowType.RT_LIST)
+				{
+					showPrimarySch((PdfSchData) sch);
+				}
+				else if (sch.RowType == RowType.RT_SHEET)
+				{
+					showSheetData((PdfShtData) sch);
+				}
+				else if (sch.RowType == RowType.RT_PDF)
+				{
+					showPdfData((PdfDocData) sch);
+				}
+			}
+		}
+
+		/*
+		public bool GetSchedule()
+		{
+			string? SheetSchedule =
+				DATA_PATH + "\\" + SHEET_SCHEDULE;
+
+			FilePath<FileNameSimple> file =
+				new FilePath<FileNameSimple>(SheetSchedule);
+
+			return GetSchedule(file);
+		}
+		*/
+
+	#endregion
+
+	#region 3 - SheetSchedule
+
+// STEP 3
+// phase PS - parse sheet schedule
+// traverse "schedules" and parse each schedule list to
+// populate "sheets"
+		public bool GetSheetSchedule()
+		{
+			// Status.IsGoodLocalSet = true;
+			bool status = true;
+			parsingPrimary = false;
+
+			Status.Phase = Progress.PS_PH_PS;
+			W.PbStatValue = (int) Progress.PS_PH_PS;
+
+			W.PbarPhaseReset();
+
+			bool result = true;
+			Status.StatusData.ErrorCodes error;
+
+			if (schedules == null || schedules.Count == 0)
+			{
+				Status.SetStatus(
+					ErrorCodes.EC_PP_FILE_MISSING_PRIME,
+					Overall.OS_FAIL);
+				status = false;
+			}
+			else
+			{
+				// showPrimeSchedule();
+				// return false;
+
+				W.PbPhaseMax = schedules.Count + 1;
+
+				sheets = new List<IPdfDataEx?>();
+
+
+				foreach (IPdfData sch in schedules)
+				{
+					W.PbPhaseValue++;
+
+					error = ErrorCodes.EC_NO_ERROR;
+					colData.ResetColTitleOk();
+
+					if (sch.RowType == RT_LIST)
+					{
+						fileBeingParsed = sch.File.FileName;
+
+						// todo have sub-method set status
+						if (!addPdfSch((PdfSchData) sch))
+						{
+							error = ErrorCodes.EC_PS_LIST_INVALID;
+						}
+					}
+					else if (sch.RowType == RT_SHEET)
+					{
+						// todo have sub-method set status
+						if (!addPdfSht((PdfShtData) sch))
+						{
+							error = ErrorCodes.EC_PS_SHEET_INVALID;
+						}
+					}
+					else if (sch.RowType == RT_PDF)
+					{
+						// todo have sub-method set status
+						if (!addPdfDoc((PdfDocData) sch))
+						{
+							error = ErrorCodes.EC_PS_PDF_INVALID;
+						}
+					}
+
+					if (error != ErrorCodes.EC_NO_ERROR)
+					{
+						Status.SetStatus(error, Overall.OS_FAIL, 
+							$"{fileBeingParsed}");
+						status = false;
+						// break;
+					}
+				}
+
+				if (status)
+				{
+					W.PbPhaseValue++;
+
+					Status.SetStatus(ErrorCodes.EC_NO_ERROR, Overall.OS_WORKED);
+					// Task.Factory.StartNew(() => showSheets());
+					// showSheets();
+
+				}
+			}
+
+			showSheets();
+			// return false;
+
+			return status;
+		}
+
+		private bool addPdfSht(PdfShtData pdfShtData)
+		{
+			PdfSchData sch = new PdfSchData();
+
+			sch.TypeName = PRIME_SCHEDULE;
+
+			pdfShtData.SetValue(CS_PARENT, sch);
+
+			pdfShtData.SetFileName(rootPath);
+
+			pdfShtData.SetValue(CS_PDFFILE, PdfSupport.GetPdfFile(pdfShtData.File));
+
+			fileBeingParsed = pdfShtData.File.FileName;
+
+			sheets.Add(pdfShtData);
+
+			return true;
+		}
+
+		private bool addPdfDoc(PdfDocData? pdfDoc)
+		{
+			if (pdfDoc == null) return false;
+			
+			if (pdfDoc.FilePath.IsVoid())
+			{
+				Status.SetStatus(ErrorCodes.EC_FILE_MISSING, 
+					Overall.OS_WARNING);
+				return false;
+			}
+
+			fileBeingParsed = pdfDoc.FilePath;
+
+			if (!pdfDoc.SetValue(CS_PDFFILE, getPdfFile(pdfDoc)!))
+			{
+				Status.SetStatus(pdfDoc.Status, Overall.OS_WARNING,
+					$"{fileBeingParsed}");
+
+				return false;
+			}
+
+			sheets.Add(pdfDoc);
+
+			return true;
+		}
+
+		private bool addPdfSch(PdfSchData sch)
+		{
+			bool status = true;
+
+			// root path is the folder that the primary schedule resides
+			// expectation is that all other paths exist below this point
+
+			if (sch.FilePath.IsVoid())
+			{
+				Status.SetStatus(ErrorCodes.EC_FILENAME_INVALID,
+					Overall.OS_FAIL, $"{sch.File.FileName}");
+				return false;
+			}
+
+			FilePath<FileNameSimple>? xlsxFile =
+				getSubFile(sch.XlsxPath!, sch.FilePath, MainWindow.EXT_XLSX);
+
+			// fileBeingParsed = xlsxFile.FileName;
+
+			if (xlsxFile == null || !xlsxFile.IsValid)
+			{
+				// Status.SetStatus(ErrorCodes.EC_FILE_MISSING,
+				// 	Overall.OS_FAIL, $"{xlsxFile.FileName}");
+				return false;
+			}
+
+			DataSet ds = xls.ReadSchedule(xlsxFile);
+
+			parentSch = sch;
+
+			headerInfo = new Dictionary<int, string?>();
+
+			if (!parseSheetSchedule(ds)) status = false;
+
+			return status;
+		}
+
+		private FilePath<FileNameSimple>? getSubFile(string? relPath, string? file, string type)
+		{
+			FilePath<FileNameSimple>? result = getFilePath(relPath, file);
+
+			if (result.IsFolderPath)
+			{
+				Status.SetStatus(ErrorCodes.EC_FILENAME_INVALID, Overall.OS_FAIL,
+					$"provided| {file}");
+				return null;
+			}
+
+			if (!result.FileExtensionNoSep.Equals(type))
+			{
+				Status.SetStatus(ErrorCodes.EC_FILENAME_INVALID, Overall.OS_FAIL,
+					$"Incorrect file extension| provided| {file}");
+				return null;
+			}
+
+			if (!result.Exists) result = FilePath<FileNameSimple>.Invalid;
+
+			return result;
+		}
+
+		private FilePath<FileNameSimple>? getFilePath(string subPath, string file)
+		{
+			if (file.IsVoid()) return null;
+
+			string filePath;
+
+			if (subPath.IsVoid())
+			{
+				filePath = rootPath + "\\" + file;
+			}
+			else
+			{
+				filePath = rootPath + subPath + "\\" + file;
+			}
+
+			return new FilePath<FileNameSimple>(filePath);
+		}
+
+		// pdf file
+
+		//*
+		private PdfFile? getPdfFile(PdfDocData? pdfDoc)
+		{
+			if (pdfDoc == null) return null;
+
+			FilePath<FileNameSimple>? file =
+				getSubFile(pdfDoc.PdfPath, pdfDoc.FilePath, MainWindow.EXT_PDF);
+
+			if (file == null || !file.IsValid) return null;
+
+			return PdfSupport.GetPdfFile(file);
+		}
+		//*/
+
+		private bool getPdfDocData(PdfDocData? pdfDoc)
+		{
+			// need to read each sheet and
+			// get the sheet information:
+			// read through file - it must have a bookmark
+			// for each page - which equals the sheet number + sheet name
+
+			// M.WriteLine($"file name| {pdfDoc.FilePath}");
+
+			// showPdfFileData(pdfDoc.PdfFile);
+
+			return true;
+		}
+
+		// sheet schedule
+
+		private bool parseSheetSchedule(DataSet sheetSchedule)
+		{
+			DataRowCollection rows = sheetSchedule.Tables[0].Rows;
+
+			bool result;
+
+			// status set in sub-method
+			int row = validateIsSheetSchedule(rows);
+
+			if (row == -1) return false;
+
+			// status set in sub-method
+			row = getSheetSchTitles(rows, row);
+
+			if (row == -1) return false;
+
+			parseSheetDataRows(rows, row);
+
+			return true;
+		}
+
+		private int validateIsSheetSchedule(DataRowCollection rows)
+		{
+			int row = validateSchType(rows, SHEET_SCHEDULE);
+			if (row == -1)
+			{
+				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_WRONG_TYPE, Overall.OS_FAIL);
+
+				return -1;
+			}
+
+			return row;
+		}
+
+		private int getSheetSchTitles(DataRowCollection rows, int startRow)
+		{
+			string? field0;
+
+			for (int i = startRow; i < rows.Count; i++)
+			{
+				DataRow r = rows[i];
+
+				field0 = (r.Field<string>(0) ?? "");
+
+				if (field0.IsVoid() || field0.Trim().StartsWith(COMMENT)) continue;
+
+				// if (!parseSchTitles(r)) break;
+				parseSchTitles(r);
+
+				if (validateSchTitles())
+				{ 
+					return i;
+				}
+
+				break;
+			}
+
+			return -1;
+		}
+
+		private void parseSheetDataRows(DataRowCollection rows, int startRow)
+		{
+			int r = 0; // row index
+			int i = 0;
+			int strLen = schTypeName.Length;
+
+			PdfShtData? sheet;
+
+			colInfo = new Dictionary<int, colValue>();
+			colValueIdx = 0;
+
+			parentSch.TypeName = schTypeName;
+			parentSch.Headings.Add(schTypeName.Substring(1, strLen - 2));
+
+			for (r = startRow; r < rows.Count; r++)
+			{
+				DataRow d = rows[r];
+
+				sheet = (PdfShtData?) parseDataRow(d);
+
+				if (sheet == null) continue;
+
+				sheet.Sequence = i++;
+
+				addParentHeadings(sheet);
+				addHeadings(sheet);
+
+				sheet.SetFileName(rootPath);
+				sheet.SetValue(CS_PDFFILE, PdfSupport.GetPdfFile(sheet.File));
+
+				sheets.Add(sheet);
+
+				colInfo = new Dictionary<int, colValue>();
+				colValueIdx = 0;
+			}
+		}
+
+		private void addParentHeadings(PdfShtData? sheet)
+		{
+			int i = 0;
+
+			foreach (string? hdg in sheet.Parent.Headings)
+			{
+				sheet.Headings.Insert(i++, hdg);
+			}
+		}
+
+
+		// debug routines
+
+		public bool GetSheetSchedule(PdfSchData sch, string rootPath)
+		{
+			bool result;
+
+			this.rootPath = rootPath;
+
+			schedules = new List<IPdfData?>();
+			schedules.Add(sch);
+
+			result =  GetSheetSchedule();
+
+			if (result)
+			{
+				showSheets();
+			}
+
+			return result;
+		}
+
+		private void showSheets()
+		{
+			WriteLine("\n*** showing sheets ***");
+
+
+			pageCount = 0;
+
+			foreach (IPdfData id in sheets)
+			{
+				if (id.RowType == RT_SHEET)
+				{
+					showSheet((PdfShtData) id);
+				}
+				else if (id.RowType == RT_PDF)
+				{
+					showPdfDoc((PdfDocData) id);
+				}
+			}
+
+			M.WriteLine($"page count| {pageCount}");
+			WriteLine("*** showing sheets done ***\n");
+		}
+
+		private void showSheet(PdfShtData sd)
+		{
+			string hx = null;
+
+			if (sd.Headings != null)
+			{
+				sd.Headings.ForEach(s => { hx += $"\\{s} "; });
+			}
+			else
+			{
+				hx = "no headings";
+			}
+
+			int strLen = sd.Parent.TypeName.Length;
+			strLen = strLen > 19 ? 19 : strLen;
+
+			// string a = $"seq-> {sd.Sequence,3}";
+			// string b = $"rt-> {sd.RowType,-8}";
+
+			string z = $"{((sd.File?.Exists ?? false) ? "Y" : "N" )}";
+			string y = $"{sd.PageCount,-2}";
+
+			string c = $"  num-> {sd.SheetNumber,-8}";
+			string d = $"name-> {sd.SheetName,-30}";
+
+			string s = $"status-> {sd.Status.ToString(),-12}";
+
+			string x;
+			if (sd.Status == ErrorCodes.EC_NO_ERROR)
+			{
+				x = $"exist-> {sd.FileExists,-6}";
+			}
+			else
+			{
+				x = $"exist-> {"nope",-6}";
+			}
+
+			string t = $"type-> {sd.RowType,-12}";
+
+
+			string f = $"file-> {(sd.File?.FileName ?? "null"),-45}";
+
+			// string p = $"parent-> {sd.Parent.TypeName.Substring(0, strLen), -20}";
+			string h = $"hdg-> {hx}";
+
+			M.WriteLine($"{y}|{s}| {t}| {c}| {d}| {x}| {f}| {h}");
+			// M.WriteLine($"\t{sd.File.FullFilePath}");
+
+			pageCount += sd.PageCount;
+		}
+
+		private void showPdfDoc(PdfDocData dd)
+		{
+			string h = null;
+
+			if (dd.Headings != null)
+			{
+				dd.Headings.ForEach(s => { h += $"\\{s} "; });
+			}
+			else
+			{
+				h = "no headings";
+			}
+
+			// string a = $"seq-> {dd.Sequence,3}";
+			// string b = $"rt-> {dd.RowType,-8}";
+			string z = $"{((dd.File?.Exists ?? false) ? "Y" : "N" )}";
+			string y = $"{dd.PageCount,-2}";
+
+			string s = $"status-> {dd.Status.ToString(),-12}";
+			
+			string p = $"pages-> {dd.PageCount,-11}";
+			string m = $"keep-> {dd.KeepBookmarks,-48}";
+			string e = $"exist-> {dd.File.Exists,-6}";
+			string f = $"file-> {dd.File.FileName,-45}";
+			string hx = $"hdg-> {h}";
+
+			M.WriteLine($"{y}|{s}| {p}| {m}| {e}| {f}| {hx}");
+
+			pageCount += dd.PageCount;
+
+			// if (dd.PdfFile.PageLNameist.Count > 0)
+			// {
+			// 	showPageNameList(dd.PdfFile);
+			// }
+		}
+
+
+		/* removed show routines
+		private void showPageNameList(PdfFile pdfFile)
+		{
+			string a = "  | pdf file page";
+
+
+			foreach (string s in pdfFile.PageLNameist)
+			{
+				string b = $"name-> {s}";
+
+				WriteLine($"{a,-63}| {b}");
+			}
+		}
+
+		private void showPdfFileData(PdfFile pdfFile)
+		{
+			foreach (var kvp in pdfFile.OutlineList)
+			{
+				M.WriteLine($"\tbookmark| {kvp.Key}| page| {kvp.Value}");
+			}
+		}
+		*/
+
+	#endregion
+
+	#region 4 - validate methods
+
+// STEP 4
+// phase VS - validate sheet list
 		public bool ValidateSheetList()
 		{
 			Status.Phase = Progress.PS_PH_VS;
@@ -271,14 +1060,14 @@ namespace ExcelTest.SheetSchedule
 			{
 				W.PbPhaseMax = sheets.Count + 1;
 
-				foreach (IPdfData pd in sheets)
+				foreach (IPdfDataEx pd in sheets)
 				{
 					W.PbPhaseValue++;
 
 					if (pd.Status != ErrorCodes.EC_NO_ERROR)
 					{
 						Status.SetStatus(pd.Status,
-							Overall.OS_PARTIAL_FAIL,
+							Overall.OS_WARNING,
 							$"failed| {pd.FilePath}");
 						status = false;
 					}
@@ -307,87 +1096,10 @@ namespace ExcelTest.SheetSchedule
 
 	#endregion
 
-	#region pdf file
+	#region 5 - create pdf tree
 
-// phase MP
-		public bool MergePdfTree()
-		{
-			// Status.IsGoodLocalSet = true;
-			bool status = true;
-
-			Status.Phase = Progress.PS_PH_MP;
-			W.PbStatValue = (int) Progress.PS_PH_MP;
-
-			W.PbarPhaseReset();
-
-			if (destFilePath == null || destFilePath.IsFolderPath)
-			{
-				Status.SetStatus(ErrorCodes.EC_GD_DEST_INVALID,
-					Overall.OS_FAIL,
-					$"File| {(destFilePath == null ? "None specified" : destFilePath.FullFilePath)}" );
-				status = false;
-			}
-			else if (destFilePath.Exists)
-			{
-				Status.SetStatus(ErrorCodes.EC_DEST_EXISTS,
-					Overall.OS_FAIL,
-					$"File| {(destFilePath == null ? "None specified" : destFilePath.FullFilePath)}" );
-				status=false;
-			}
-			else
-			{
-				// M.WriteLine($"Saving to| {destFilePath.FullFilePath}");
-
-				nodeTreeCount = tree.CountElements();
-
-				W.PbPhaseMax = nodeTreeCount;
-
-				// todo move status of sub-method
-				if (PdfSupport.MergePdfTree(destFilePath, tree))
-				{
-					Status.SetStatus(ErrorCodes.EC_NO_ERROR,
-						Overall.OS_WORKED);
-				}
-				else
-				{
-					Status.SetStatus(ErrorCodes.EC_MP_MERGE_FAIL,
-						Overall.OS_FAIL);
-					status= false;
-				}
-			}
-
-			return status;
-		}
-
-// phase CB
-		public bool CreatePdfOutlineTree()
-		{
-			// Status.IsGoodLocalSet = true;
-			bool status = true;
-
-			Status.Phase = Progress.PS_PH_CB;
-			W.PbStatValue = (int) Progress.PS_PH_CB;
-
-			W.PbarPhaseReset();
-
-			W.PbPhaseMax = nodeTreeCount;
-
-			// todo have sub-method set status
-			if (PdfSupport.CreateOutlineTree(tree))
-			{
-				Status.SetStatus(ErrorCodes.EC_NO_ERROR,
-					Overall.OS_WORKED);
-			}
-
-			return status;
-		}
-
-	#endregion
-
-
-	#region pdf tree
-
-// phase CT
+// STEP 5
+// phase CT - create pdf tree
 		public bool CreatePdfTree()
 		{
 			Status.Phase = Progress.PS_PH_CT;
@@ -417,7 +1129,7 @@ namespace ExcelTest.SheetSchedule
 
 					Status.SetStatus(ErrorCodes.EC_NO_ERROR, Overall.OS_WORKED);
 					// Task.Factory.StartNew(() => showPdfNodeTree());
-					// showPdfNodeTree();
+					showPdfNodeTree();
 				}
 			}
 
@@ -853,7 +1565,6 @@ namespace ExcelTest.SheetSchedule
 		}
 		*/
 
-
 		// show the tree
 
 		private int level = 0;
@@ -921,8 +1632,16 @@ namespace ExcelTest.SheetSchedule
 
 		private void showPdfNodeTree()
 		{
+			sb.Append("\n\n*** show pdf node tree ***\n");
+
 			showPdfTreeNodes(tree.Root);
+
+			sb.Append("*** show pdf node tree done ***\n");
+
+			WriteLine(sb.ToString());
 		}
+
+		private StringBuilder sb = new StringBuilder();
 
 		// when showing typical nodes
 		private void showPdfTreeNodes(APdfTreeNode node)
@@ -954,10 +1673,21 @@ namespace ExcelTest.SheetSchedule
 				} 
 				else 
 				{
-					showPdfNodeLeaf((APdfTreeNode) kvp.Value);
+					showPdfNodeLeaf((PdfTreeLeaf) kvp.Value);
 				}
 			}
 		}
+
+		private void showPdfTreeItem(APdfTreeNode node)
+		{
+			string n1 = node.ItemList.ToString();
+			string n2 = node.Bookmark.ToString();
+			string n3 = node.PageCount.ToString();
+			string n4 = node.ItemType.ToString();
+			string n6 = node.PageNumber.ToString();
+
+		}
+
 
 		private void showPdfTreeBranch(APdfTreeNode node)
 		{
@@ -967,11 +1697,13 @@ namespace ExcelTest.SheetSchedule
 				$"level| {level,-3}| pg| {node.PageNumber,-3}{"  ".Repeat((level - 1) * margMulti)}{node.Bookmark}";
 
 			WriteLine($"{t,-3}{preface}");
+
+			sb.Append($"A type| {node.ItemType,-14}| pg| {node.PageNumber,3}|                | list count| {node.ItemList.Count,2}|               bkmrk| {node.Bookmark}\n");
 		}
 
-		private void showPdfNodeLeaf(APdfTreeNode node)
+		private void showPdfNodeLeaf(PdfTreeLeaf node)
 		{
-			string h;
+			string s;
 			string t = "?";
 			string f = String.Empty;
 			string preface = $"       |    | pg| {node.PageNumber,-3} {" ".Repeat((level + 2) * margMulti)}{node.Bookmark}";
@@ -979,20 +1711,28 @@ namespace ExcelTest.SheetSchedule
 			if (node.ItemType == PdfTreeItemType.PT_LEAF)
 			{
 				t = "L";
-				f = $"| file| {( (PdfTreeLeaf) node).File.FileName}";
+				f = $"| file| {node.File.FileName}";
 			} 
 			else if (node.ItemType == PdfTreeItemType.PT_NODE || node.ItemType == PdfTreeItemType.PT_NODE_FILE)
 			{
 				t = "N";
 			}
 
-			M.WriteLine($"{t}{preface,-65}| pg cnt| {node.PageCount,-3}{f}");
-		}
+			s = $"{(node.SheetNumber ?? "null"),-6}";
+			
 
+			M.WriteLine($"{t}{preface,-65}| pg cnt| {node.PageCount,-3}{f}");
+
+			sb.Append($"B type| {node.ItemType,-14}| pg| {node.PageNumber,3}| sht num| {s}| list count| {node.ItemList.Count,2}| pg count| {node.PageCount,2}| bkmrk| {node.Bookmark}\n");
+
+		}
 
 
 		// specific when showing bookmarks from a compiled pdf file
 		// shows the whole "branch"
+
+
+		/* alternate showing pdf nodes
 		private void showPdfNodes(PdfTreeNode node)
 		{
 			showPdfNode(node);
@@ -1025,6 +1765,9 @@ namespace ExcelTest.SheetSchedule
 				$"level| {node.Level,-3}| pg| {node.PageNumber,-3}{"  ".Repeat((node.Level-1) * margMulti)}{node.Bookmark}";
 
 			WriteLine($"{t,-3}{preface,-75} | file| {f}");
+
+			// below - not used?
+			sb.Append($"C type| {node.ItemType,-14}| pg| {node.PageNumber,3}| list count| {node.ItemList.Count,2}| pg count  | {node.PageCount,2}| bkmrk| {node.Bookmark}\n");
 		}
 
 		private void showPdfNodeItem(PdfTreeNode node)
@@ -1036,9 +1779,11 @@ namespace ExcelTest.SheetSchedule
 				$"level| {node.Level,-3}| pg| {node.PageNumber,-3}{"  ".Repeat((node.Level-1) * margMulti)}{node.Bookmark}";
 
 			WriteLine($"{t,-3}{preface}");
+
+			// below - not used?
+			sb.Append($"D type| {node.ItemType,-14}| pg| {node.PageNumber,3}| list count| {node.ItemList.Count,2}| pg count  | {node.PageCount,2}| bkmrk| {node.Bookmark}\n");
 		}
-
-
+		*/
 
 		private void showPdfNodes2(PdfTreeNode node, int level)
 		{
@@ -1068,11 +1813,24 @@ namespace ExcelTest.SheetSchedule
 		{
 			string t = "N";
 			string f = node.File.FileName;
+			string b = node.Bookmark;
+			string b1 = "bkmk only";
+			string sht = "";
+
+			if (node.EstIsSheet)
+			{
+				b1 = "* est pg bkmk";
+				sht = $"({node.SheetNumber} - {node.SheetName})";
+			}
 			
 			string preface =
 				$"level| {node.Level,-3}| pg| {node.PageNumber,-3}{"  ".Repeat((level-1) * margMulti)}{node.Bookmark}";
 
-			WriteLine($"{t,-3}{preface}");
+			WriteLine($"{t,-3}{preface,-63}| pg cnt| {node.PageCount,-3}");
+
+			sb.Append($"E type| {node.ItemType,-14}| pg| {node.PageNumber,3}| {b1, -15}| list count| {node.ItemList.Count,2}| pg count| {node.PageCount,2}| bkmrk| {b}  {sht}\n");
+
+
 		}
 
 		private void showPdfNodeFile2(PdfTreeNode node, int level)
@@ -1083,753 +1841,216 @@ namespace ExcelTest.SheetSchedule
 			string preface =
 				$"level| {node.Level,-3}| pg| {node.PageNumber,-3}{"  ".Repeat((level-1) * margMulti)}{node.Bookmark}";
 
-			WriteLine($"{t,-3}{preface,-75} | file| {f}");
+			WriteLine($"{t,-3}{preface,-63}| pg cnt| {node.PageCount,-3}| file| {f}");
+
+			sb.Append($"F type| {node.ItemType,-14}| pg| {node.PageNumber,3}|                | list count| {node.ItemList.Count,2}| pg count| {node.PageCount,2}| bkmrk| {node.Bookmark}\n");
+
 		}
 
 
 	#endregion
 
+	#region 6 - merge pdf file
 
-	#region PrimaryScheduleData
-
-// phase PP
-		public bool GetSchedule(
-			FilePath<FileNameSimple> file)
+// STEP 6
+// phase MP - merge pdf tree
+		public bool MergePdfTree()
 		{
-			Status.Phase = Progress.PS_PH_PP;
+			// Status.IsGoodLocalSet = true;
+			bool status = true;
 
-			W.PbStatValue = (int) Progress.PS_PH_PP;
+
+			/*
+			Type[] knowTypes = new [] {typeof(PdfTreeLeaf), typeof(APdfTreeNode), 
+				typeof(FileNameAsSheetFile), typeof(FileNameSimple), typeof(AFileName),
+				typeof(PdfTreeNode), typeof(PdfTreeNodeFile),
+				typeof(FilePathInfo<FileNameAsSheetFile>)};
+
+			DataContractSerializer ds = new DataContractSerializer(typeof(PdfTreeBranch), knowTypes);
+
+			string filePath = @"C:\Users\jeffs\Documents\Programming\VisualStudioProjects\PDF SOLUTIONS\_Samples\output.xml";
+
+			XmlWriterSettings xmlSettings = new XmlWriterSettings() {Indent = true};
+
+			using (XmlWriter w = XmlWriter.Create(filePath, xmlSettings))
+			{
+				ds.WriteObject(w, tree.Root);
+			}
+			*/
+
+			
+
+
+
+			Status.Phase = Progress.PS_PH_MP;
+			W.PbStatValue = (int) Progress.PS_PH_MP;
 
 			W.PbarPhaseReset();
 
-			bool status = true;
-
-			fileBeingParsed = file.FileName;
-
-			if (file == null || !file.Exists
-				|| !file.FileExtensionNoSep.Equals(MainWindow.EXT_XLSX))
+			if (destFilePath == null || destFilePath.IsFolderPath)
 			{
-				Status.SetStatus(
-					ErrorCodes.EC_PP_FILE_MISSING_PRIME,
-					Overall.OS_FAIL, file?.FullFilePath ?? "No file specified");
+				Status.SetStatus(ErrorCodes.EC_GD_DEST_INVALID,
+					Overall.OS_FAIL,
+					$"File| {(destFilePath == null ? "None specified" : destFilePath.FullFilePath)}" );
 				status = false;
+			}
+			else if (destFilePath.Exists)
+			{
+				Status.SetStatus(ErrorCodes.EC_DEST_EXISTS,
+					Overall.OS_FAIL,
+					$"File| {(destFilePath == null ? "None specified" : destFilePath.FullFilePath)}" );
+				status=false;
 			}
 			else
 			{
-				rootPath = file.FolderPath;
+				// M.WriteLine($"Saving to| {destFilePath.FullFilePath}");
 
-				schedules = new List<IPdfData?>();
+				nodeTreeCount = tree.CountElements();
 
-				// read schedule to a dataset
-				DataSet schedule = xls.ReadSchedule(file);
+				W.PbPhaseMax = nodeTreeCount;
 
-				// parse the dataset into the List<>
-				if (!parseSchData(schedule))
+				// todo move status of sub-method
+				if (PdfSupport.MergePdfTree(destFilePath, tree))
 				{
-					Status.SetStatus(
-						ErrorCodes.EC_PP_SCHED_WRONG_FORMAT,
-						Overall.OS_FAIL);
-					status = false;
+					Status.SetStatus(ErrorCodes.EC_NO_ERROR,
+						Overall.OS_WORKED);
 				}
 				else
 				{
-					Status.SetStatus(ErrorCodes.EC_NO_ERROR, Overall.OS_WORKED);
-					W.PbPhaseValue++;
+					Status.SetStatus(ErrorCodes.EC_MP_MERGE_FAIL,
+						Overall.OS_FAIL);
+					status= false;
 				}
 			}
 
 			return status;
 		}
 
-		// process primary schedule
+	#endregion
 
-		private bool parseSchData(DataSet xlSchedule)
+	#region 7 - create bookmarks
+
+// STEP 7
+// phase CB - create bookmarks
+		public bool CreatePdfOutlineTree()
 		{
 			// Status.IsGoodLocalSet = true;
 			bool status = true;
 
-			DataRowCollection rows = xlSchedule.Tables[0].Rows;
+			Status.Phase = Progress.PS_PH_CB;
+			W.PbStatValue = (int) Progress.PS_PH_CB;
 
-			W.PbPhaseMax = rows.Count + 1;
+			W.PbarPhaseReset();
+
+			W.PbPhaseMax = nodeTreeCount;
+
+			// todo have sub-method set status
+			if (PdfSupport.CreateOutlineTree(tree))
+			{
+				Status.SetStatus(ErrorCodes.EC_NO_ERROR,
+					Overall.OS_WORKED);
+			}
+
+			return status;
+		}
+		
+	#endregion
+
+	#region 8 - files in folder
+
+		// validate the "sheets" list of files versus the list of files in the folder
+		// for extra / not accounted files
+// STEP 8 - validate files in folder versus excel
+		public bool ValidateFilesInFolder(FilePath<FileNameSimple> primeFile)
+		{
+			Status.Phase = Progress.PS_PH_VF;
+			W.PbStatValue = (int) Progress.PS_PH_VF;
+			W.PbarPhaseReset();
+
+			W.PbPhaseMax = schedules.Count;
 			W.PbPhaseValue = 1;
 
-			int row = validateSchType(rows, PRIME_SCHEDULE);
-			if (row == -1)
-			{
-				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_WRONG_TYPE,
-					Overall.OS_FAIL, $"{fileBeingParsed}");
-
-				return false;
-			}
-
-			row = getSchTitles(rows, row);
-			if (row == -1)
-			{
-				return false;
-			}
-
-			parentSch = new PdfSchData();
-
-			if (parseSchDataRows(row, rows) == 0)
-			{
-				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_EMPTY,
-					Overall.OS_FAIL, $"{fileBeingParsed}");
-				return false;
-			}
-
-			return status;
-		}
-
-		private int getSchTitles(DataRowCollection rows, int startRow)
-		{
-			string? field0;
-
-			for (int i = startRow; i < rows.Count; i++)
-			{
-				DataRow r = rows[i];
-
-				W.PbPhaseValue++;
-
-				field0 = (r.Field<string>(0) ?? "");
-
-				if (field0.IsVoid() || field0.Trim().StartsWith(COMMENT)) continue;
-
-				// if (!parseSchTitles(r)) break;
-				parseSchTitles(r);
-
-				if (validateSchTitles())
-				{
-					return i;
-				}
-
-				break;
-			}
-
-			return -1;
-		}
-
-		private bool validateSchTitles()
-		{
-			string? search = null;
-			string? reqd = null;
-			string? found = null;
-
-			int len;
-			int i = 1;
-
-			// Status.IsGoodLocalSet = true;
-			bool status = true;
-
-			if (schColTitleData.Count == 0
-				|| schColTitleData[0].ColumnSubject != CS_TYPE) return false;
-
-			foreach (ColumnTitle ct in schColTitleData)
-			{
-				len = ct.Heading.Length;
-				len = len > ColumnData.MAX_TITLE_LEN ? ColumnData.MAX_TITLE_LEN : len;
-				search = ct.Heading.Substring(0, len);
-				found = ct.Heading;
-				reqd = colData.ColumnTitles2[search].Heading;
-
-				if (ct.IsVariableQty)
-				{
-					reqd = string.Format(reqd, i++);
-				}
-				else
-				{
-					i = 1;
-				}
-
-				if (reqd.Equals(found)) continue;
-
-				// heading does not match
-
-				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_WRONG_TITLES,
-					Overall.OS_PARTIAL_FAIL, $"{fileBeingParsed}| found| {found}");
-				status = false;
-			}
-
-
-			return status;
-		}
-
-		private int parseSchDataRows(int startRow, DataRowCollection rows)
-		{
-			int r = 0; // row index
-			int i = 0;
-
-			IPdfData? item;
-
-			colInfo = new Dictionary<int, colValue>();
-			colValueIdx = 0;
-
-			for (r = startRow; r < rows.Count; r++)
-			{
-				DataRow d = rows[r];
-
-				W.PbPhaseValue++;
-
-				item = parseDataRow(d);
-
-				if (item == null) continue;
-
-				item.Sequence = i++;
-
-				if (item.RowType != RT_LIST) addHeadings(item);
-
-				schedules.Add(item);
-
-				colInfo = new Dictionary<int, colValue>();
-				colValueIdx = 0;
-			}
-
-			return schedules!.Count;
-		}
-
-		// debug routines
-
-		/*
-		private void testScheduleTitles(DataRow r)
-		{
-
-			M.WriteLine("Original process method\n");
-			getScheduleTitles(r);
-
-			showSchColData();
-
-			schColData = new List<ColumnTitle>();
-
-			M.WriteLine("\n\nNew process method\n");
-			getScheduleTitles2(r);
-
-			showSchColData();
-		}
-		*/
-
-		private void showSchedule()
-		{
-			// M.WriteLine("this is a test");
-
-			foreach (IPdfData sch in schedules)
-			{
-				if (sch.RowType == RowType.RT_LIST)
-				{
-					showPrimarySch((PdfSchData) sch);
-				}
-				else if (sch.RowType == RowType.RT_SHEET)
-				{
-					showSheetData((PdfShtData) sch);
-				}
-				else if (sch.RowType == RowType.RT_PDF)
-				{
-					showPdfData((PdfDocData) sch);
-				}
-			}
-		}
-
-		/*
-		public bool GetSchedule()
-		{
-			string? SheetSchedule =
-				DATA_PATH + "\\" + SHEET_SCHEDULE;
-
-			FilePath<FileNameSimple> file =
-				new FilePath<FileNameSimple>(SheetSchedule);
-
-			return GetSchedule(file);
-		}
-		*/
-
-	#endregion
-
-	#region SheetSchedule
-
-// phase PS
-		public bool GetSheetSchedule()
-		{
-			// Status.IsGoodLocalSet = true;
-			bool status = true;
-
-			Status.Phase = Progress.PS_PH_PS;
-			W.PbStatValue = (int) Progress.PS_PH_PS;
-
-			W.PbarPhaseReset();
-
-			bool result = true;
-			Status.StatusData.ErrorCodes error;
-
-			if (schedules == null || schedules.Count == 0)
-			{
-				Status.SetStatus(
-					ErrorCodes.EC_PP_FILE_MISSING_PRIME,
-					Overall.OS_FAIL);
-				status = false;
-			}
-			else
-			{
-				W.PbPhaseMax = schedules.Count + 1;
-
-				sheets = new List<IPdfDataEx?>();
-
-				foreach (IPdfData sch in schedules)
-				{
-					W.PbPhaseValue++;
-
-					error = ErrorCodes.EC_NO_ERROR;
-					colData.ResetColTitleOk();
-
-					if (sch.RowType == RT_LIST)
-					{
-						fileBeingParsed = sch.File.FileName;
-
-						// todo have sub-method set status
-						if (!addPdfSch((PdfSchData) sch))
-						{
-							error = ErrorCodes.EC_PS_LIST_INVALID;
-						}
-					}
-					else if (sch.RowType == RT_SHEET)
-					{
-						// todo have sub-method set status
-						if (!addPdfSht((PdfShtData) sch))
-						{
-							error = ErrorCodes.EC_PS_SHEET_INVALID;
-						}
-					}
-					else if (sch.RowType == RT_PDF)
-					{
-						// todo have sub-method set status
-						if (!addPdfDoc((PdfDocData) sch))
-						{
-							error = ErrorCodes.EC_PS_PDF_INVALID;
-						}
-					}
-
-					if (error != ErrorCodes.EC_NO_ERROR)
-					{
-						Status.SetStatus(error, Overall.OS_FAIL, 
-							$"{fileBeingParsed}");
-						status = false;
-						// break;
-					}
-				}
-
-				if (status)
-				{
-					W.PbPhaseValue++;
-
-					Status.SetStatus(ErrorCodes.EC_NO_ERROR, Overall.OS_WORKED);
-					// Task.Factory.StartNew(() => showSheets());
-					// showSheets();
-
-				}
-			}
-
-			return status;
-		}
-
-		private bool addPdfSht(PdfShtData pdfShtData)
-		{
-			PdfSchData sch = new PdfSchData();
-
-			sch.TypeName = PRIME_SCHEDULE;
-
-			pdfShtData.SetValue(CS_PARENT, sch);
-
-			pdfShtData.SetFileName(rootPath);
-
-			pdfShtData.SetValue(CS_PDFFILE, PdfSupport.GetPdfFile(pdfShtData.File));
-
-			fileBeingParsed = pdfShtData.File.FileName;
-
-			sheets.Add(pdfShtData);
-
-			return true;
-		}
-
-		private bool addPdfDoc(PdfDocData? pdfDoc)
-		{
-			if (pdfDoc == null) return false;
-			
-			if (pdfDoc.FilePath.IsVoid())
-			{
-				Status.SetStatus(ErrorCodes.EC_FILE_MISSING, 
-					Overall.OS_PARTIAL_FAIL);
-				return false;
-			}
-
-			fileBeingParsed = pdfDoc.FilePath;
-
-			if (!pdfDoc.SetValue(CS_PDFFILE, getPdfFile(pdfDoc)!))
-			{
-				Status.SetStatus(pdfDoc.Status, Overall.OS_PARTIAL_FAIL,
-					$"{fileBeingParsed}");
-
-				return false;
-			}
-
-			
-
-			// bool result = getPdfDocData(pdfDoc);
-
-			// if (result)
-			// {
-			// }
-			sheets.Add(pdfDoc);
-
-			return true;
-		}
-
-		private bool addPdfSch(PdfSchData sch)
-		{
-			// Status.IsGoodLocalSet = true;
-			bool status = true;
-
-			// root path is the folder that the primary schedule resides
-			// expectation is that all other paths exist below this point
-
-			if (sch.FilePath.IsVoid())
-			{
-				Status.SetStatus(ErrorCodes.EC_FILENAME_INVALID,
-					Overall.OS_FAIL, $"{sch.File.FileName}");
-				return false;
-			}
-
-			FilePath<FileNameSimple>? xlsxFile =
-				getSubFile(sch.XlsxPath!, sch.FilePath, MainWindow.EXT_XLSX);
-
-			// fileBeingParsed = xlsxFile.FileName;
-
-			if (xlsxFile == null || !xlsxFile.IsValid)
-			{
-				// Status.SetStatus(ErrorCodes.EC_FILE_MISSING,
-				// 	Overall.OS_FAIL, $"{xlsxFile.FileName}");
-				return false;
-			}
-
-			DataSet ds = xls.ReadSchedule(xlsxFile);
-
-			parentSch = sch;
-
-			headerInfo = new Dictionary<int, string?>();
-
-			if (!parseSheetSchedule(ds)) return false;
-
-			return status;
-		}
-
-		private FilePath<FileNameSimple>? getSubFile(string? relPath, string? file, string type)
-		{
-			FilePath<FileNameSimple>? result = getFilePath(relPath, file);
-
-			if (result.IsFolderPath)
-			{
-				Status.SetStatus(ErrorCodes.EC_FILENAME_INVALID, Overall.OS_FAIL,
-					$"provided| {file}");
-				return null;
-			}
-
-			if (!result.FileExtensionNoSep.Equals(type))
-			{
-				Status.SetStatus(ErrorCodes.EC_FILENAME_INVALID, Overall.OS_FAIL,
-					$"Incorrect file extension| provided| {file}");
-				return null;
-			}
-
-			if (!result.Exists) result = FilePath<FileNameSimple>.Invalid;
-
-			return result;
-		}
-
-		private FilePath<FileNameSimple>? getFilePath(string subPath, string file)
-		{
-			if (file.IsVoid()) return null;
-
-			string filePath;
-
-			if (subPath.IsVoid())
-			{
-				filePath = rootPath + "\\" + file;
-			}
-			else
-			{
-				filePath = rootPath + subPath + "\\" + file;
-			}
-
-			return new FilePath<FileNameSimple>(filePath);
-		}
-
-		// pdf file
-
-		//*
-		private PdfFile? getPdfFile(PdfDocData? pdfDoc)
-		{
-			if (pdfDoc == null) return null;
-
-			FilePath<FileNameSimple>? file =
-				getSubFile(pdfDoc.PdfPath, pdfDoc.FilePath, MainWindow.EXT_PDF);
-
-			if (file == null || !file.IsValid) return null;
-
-			return PdfSupport.GetPdfFile(file);
-		}
-		//*/
-
-		private bool getPdfDocData(PdfDocData? pdfDoc)
-		{
-			// need to read each sheet and
-			// get the sheet information:
-			// read through file - it must have a bookmark
-			// for each page - which equals the sheet number + sheet name
-
-			// M.WriteLine($"file name| {pdfDoc.FilePath}");
-
-			// showPdfFileData(pdfDoc.PdfFile);
-
-			return true;
-		}
-
-		// sheet schedule
-
-		private bool parseSheetSchedule(DataSet sheetSchedule)
-		{
-			DataRowCollection rows = sheetSchedule.Tables[0].Rows;
+			string baseFolderPath = primeFile.FolderPath;
+			string pdfFolderPath;
+
+			List<string> files = new List<string>();
+			List<string> temp;
+			List<string> foldersSearched = new List<string>();
 
 			bool result;
 
-			// status set in sub-method
-			int row = validateIsSheetSchedule(rows);
-			if (row == -1) return false;
 
-			// status set in sub-method
-			row = getSheetSchTitles(rows, row);
-			if (row == -1) return false;
-
-			// showSchColData();
-
-			parseSheetDataRows(rows, row);
-
-			return true;
-		}
-
-		private int validateIsSheetSchedule(DataRowCollection rows)
-		{
-			int row = validateSchType(rows, SHEET_SCHEDULE);
-			if (row == -1)
+			foreach (IPdfData pd in schedules)
 			{
-				Status.SetStatus(ErrorCodes.EC_PP_PS_SCHED_WRONG_TYPE, Overall.OS_FAIL);
+				W.PbPhaseValue++;
 
-				return -1;
+				if (pd.RowType!= RT_LIST) continue;
+
+				pdfFolderPath = baseFolderPath  + ((PdfSchData) pd).PdfPath;
+
+				if (foldersSearched.Contains(pdfFolderPath)) continue;
+
+				foldersSearched.Add(pdfFolderPath);
+
+				if (validateFilesInFolder(pdfFolderPath, out temp)) continue;
+
+				foreach (string s in temp)
+				{
+					files.Add(s);
+				}
 			}
 
-			return row;
-		}
-
-		private int getSheetSchTitles(DataRowCollection rows, int startRow)
-		{
-			string? field0;
-
-			for (int i = startRow; i < rows.Count; i++)
+			if (files.Count == 0)
 			{
-				DataRow r = rows[i];
+				Status.SetStatus(ErrorCodes.EC_NO_ERROR, Overall.OS_WORKED);
+			}
+			else
+			{
+				string answer = $"quantity| {files.Count}\n";
 
-				field0 = (r.Field<string>(0) ?? "");
-
-				if (field0.IsVoid() || field0.Trim().StartsWith(COMMENT)) continue;
-
-				// if (!parseSchTitles(r)) break;
-				parseSchTitles(r);
-
-				if (validateSchTitles())
+				foreach (string s in files)
 				{
-					return i;
+					FilePath<FileNameSimple> file = new FilePath<FileNameSimple>(s);
+
+					answer += $"{file[-1.1]}{file[0.1]}\n";
 				}
 
-				break;
+				Status.SetStatus(ErrorCodes.EC_VF_EXTRA_FILES_FOUND, 
+					Overall.OS_WARNING, answer);
 			}
 
-			return -1;
+
+			return files.Count == 0;
 		}
-
-		private void parseSheetDataRows(DataRowCollection rows, int startRow)
+		
+		private bool validateFilesInFolder(string folder, out List<string> files)
 		{
-			int r = 0; // row index
-			int i = 0;
-			int strLen = schTypeName.Length;
+			// file is the folder with the 
+			string[] filesInFolder = Directory.GetFiles(folder);
+			files = new List<string>();
 
-			PdfShtData? sheet;
-
-			colInfo = new Dictionary<int, colValue>();
-			colValueIdx = 0;
-
-			parentSch.TypeName = schTypeName;
-			parentSch.Headings.Add(schTypeName.Substring(1, strLen - 2));
-
-			for (r = startRow; r < rows.Count; r++)
-			{
-				DataRow d = rows[r];
-
-				sheet = (PdfShtData?) parseDataRow(d);
-
-				if (sheet == null) continue;
-
-				sheet.Sequence = i++;
-
-				addParentHeadings(sheet);
-				addHeadings(sheet);
-
-				sheet.SetFileName(rootPath);
-				sheet.SetValue(CS_PDFFILE, PdfSupport.GetPdfFile(sheet.File));
-
-				sheets.Add(sheet);
-
-				colInfo = new Dictionary<int, colValue>();
-				colValueIdx = 0;
-			}
-		}
-
-		private void addParentHeadings(PdfShtData? sheet)
-		{
-			int i = 0;
-
-			foreach (string? hdg in sheet.Parent.Headings)
-			{
-				sheet.Headings.Insert(i++, hdg);
-			}
-		}
-
-
-		// debug routines
-
-		public bool GetSheetSchedule(PdfSchData sch, string rootPath)
-		{
 			bool result;
+			string fileName;
 
-			this.rootPath = rootPath;
-
-			schedules = new List<IPdfData?>();
-			schedules.Add(sch);
-
-			result =  GetSheetSchedule();
-
-			if (result)
+			foreach (string s in filesInFolder)
 			{
-				showSheets();
+				files.Add(s.ToLower());
 			}
 
-			return result;
-		}
-
-		private void showSheets()
-		{
-			pageCount = 0;
-
-			foreach (IPdfData id in sheets)
+			foreach (IPdfDataEx px in sheets)
 			{
-				if (id.RowType == RT_SHEET)
+				fileName = px.File.FullFilePath.ToLower();
+
+				if (files.Contains(fileName))
 				{
-					showSheet((PdfShtData) id);
-				}
-				else if (id.RowType == RT_PDF)
-				{
-					showPdfDoc((PdfDocData) id);
+					files.Remove(fileName);
 				}
 			}
 
-			M.WriteLine($"page count| {pageCount}");
-		}
-
-		private void showSheet(PdfShtData sd)
-		{
-			string hx = null;
-
-			if (sd.Headings != null)
-			{
-				sd.Headings.ForEach(s => { hx += $"\\{s} "; });
-			}
-			else
-			{
-				hx = "no headings";
-			}
-
-			int strLen = sd.Parent.TypeName.Length;
-			strLen = strLen > 19 ? 19 : strLen;
-
-			// string a = $"seq-> {sd.Sequence,3}";
-			// string b = $"rt-> {sd.RowType,-8}";
-
-			string z = $"{((sd.File?.Exists ?? false) ? "Y" : "N" )}";
-			string y = $"{sd.PageCount,-2}";
-
-			string c = $"  num-> {sd.SheetNumber,-8}";
-			string d = $"name-> {sd.SheetName,-30}";
-
-			string s = $"status-> {sd.Status.ToString(),-12}";
-
-			string x;
-			if (sd.Status == ErrorCodes.EC_NO_ERROR)
-			{
-				x = $"exist-> {sd.FileExists,-6}";
-			}
-			else
-			{
-				x = $"exist-> {"nope",-6}";
-			}
-
-
-			string f = $"file-> {(sd.File?.FileName ?? "null"),-45}";
-
-			// string p = $"parent-> {sd.Parent.TypeName.Substring(0, strLen), -20}";
-			string h = $"hdg-> {hx}";
-
-			M.WriteLine($"{y}|{s}| {c}| {d}| {x}| {f}| {h}");
-			// M.WriteLine($"\t{sd.File.FullFilePath}");
-
-			pageCount += sd.PageCount;
-		}
-
-		private void showPdfDoc(PdfDocData dd)
-		{
-			string h = null;
-
-			if (dd.Headings != null)
-			{
-				dd.Headings.ForEach(s => { h += $"\\{s} "; });
-			}
-			else
-			{
-				h = "no headings";
-			}
-
-			// string a = $"seq-> {dd.Sequence,3}";
-			// string b = $"rt-> {dd.RowType,-8}";
-			string z = $"{((dd.File?.Exists ?? false) ? "Y" : "N" )}";
-			string y = $"{dd.PageCount,-2}";
-
-			string s = $"status-> {dd.Status.ToString(),-12}";
-			string p = $"pages-> {dd.PageCount,-8}";
-			string m = $"keep-> {dd.KeepBookmarks,-30}";
-			string e = $"exist-> {dd.File.Exists,-6}";
-			string f = $"file-> {dd.File.FileName,-45}";
-			string hx = $"hdg-> {h}";
-
-// num-> P02     | name-> Plumbing Floor Plan           | exist-> True  | file-> P02 - Plumbing Floor Plan.pdf                | hdg-> \Plumbing-Engineer Name 
-
-			M.WriteLine($"{y}|{s}| {p}| {m}| {e}| {f}| {hx}");
-
-			pageCount += dd.PageCount;
-		}
-
-		private void showPdfFileData(PdfFile pdfFile)
-		{
-			foreach (var kvp in pdfFile.OutlineList)
-			{
-				M.WriteLine($"\tbookmark| {kvp.Key}| page| {kvp.Value}");
-			}
+			return files.Count == 0;
 		}
 
 	#endregion
-
 
 	#region common methods
 
@@ -1998,17 +2219,21 @@ namespace ExcelTest.SheetSchedule
 			// return Status.IsGood;
 		}
 
+		// is the row ok to use
 		private bool validDataRow(DataRow r, bool allowColTitle = false)
 		{
 			string? field0 = r.Field<string>(0);
 
 			if (!field0.IsVoid())
 			{
+				// if the row is a comment?
 				if (field0.Trim().StartsWith(COMMENT)) return false;
-				if (!allowColTitle && field0.Trim().StartsWith(COL_TITLE)) return false;
+				// is the first character the column title marker
+				if (!allowColTitle && field0.Trim().StartsWith(COL_TITLE_PREFACE)) return false;
 			}
 			else
 			{
+				// string was empty
 				return false;
 			}
 
@@ -2025,15 +2250,15 @@ namespace ExcelTest.SheetSchedule
 			IPdfData? item;
 			bool? result;
 
+			// determine if row is ok to use - not comment, empty, or column title
 			if (!validDataRow(r)) return null;
 
 			rt = getRowType(r);
 
-			if (rt == RT_HEADING)
+			// if row is a heading, process headings and return
+			if (rt == RT_SHEET || rt== RT_PDF)
 			{
-				getHeading(r);
-
-				return null;
+				saveHeadings(r);
 			}
 
 			result = validateDataRowTitles(rt);
@@ -2049,9 +2274,11 @@ namespace ExcelTest.SheetSchedule
 				Status.SetStatus(ErrorCodes.EC_ROW_HAS_ERRORS, Overall.OS_FAIL, 
 					$"{fileBeingParsed}| row| {idx}");
 			}
+
 			return item;
 		}
 
+		// parse an individual data row into the dictionary collection
 		private void parseRowData(DataRow? d)
 		{
 			if (d == null) return;
@@ -2062,22 +2289,32 @@ namespace ExcelTest.SheetSchedule
 
 			for (c = 1; c < schColTitleData.Count; c++)
 			{
+				// get the column type
 				cs = schColTitleData[c].ColumnSubject;
 
+				// for this process, ignore heading columns
 				if (cs == CS_HEADING) continue;
 
-				value = null;
-
+				// get the string value of the column
 				value = d.Field<string>(c);
 
+				// ignore empty columns
 				if (value.IsVoid()) continue;
 
+				// add the data to the collection
 				colInfo.Add(colValueIdx++, new colValue(cs, value));
 			}
+
+			if (colInfo.ContainsKey(0)) return;
+
+			colInfo.Add(0, new colValue(CS_TYPE, ColumnData.RT_SHEET_S));
+
 		}
 
 		private RowType getRowType(DataRow d)
 		{
+			if (!parsingPrimary) return RT_SHEET;
+
 			string? value = (d?.Field<string>(0) ?? "").Trim().ToLower();
 
 			if (value.IsVoid()) return RT_ERROR;
@@ -2150,7 +2387,8 @@ namespace ExcelTest.SheetSchedule
 			return ps;
 		}
 
-
+		// validate actual column titles versus the planned column titles 
+		// for what is optional and required
 		private bool? validateDataRowTitles(RowType rt)
 		{
 			if ((int)rt < 0 || colData.ColumnTitlesOk[(int) rt].HasValue) return null;
@@ -2160,7 +2398,7 @@ namespace ExcelTest.SheetSchedule
 
 			bool result = true;
 			ColumnTitle actCt;
-			string reqdFormatted;
+
 			int i = 1;
 			int j = 0;
 
@@ -2189,7 +2427,7 @@ namespace ExcelTest.SheetSchedule
 				{
 					Status.SetStatus(
 						ErrorCodes.EC_PP_PS_SCHED_WRONG_TITLES,
-						Overall.OS_PARTIAL_FAIL,
+						Overall.OS_WARNING,
 						$"{fileBeingParsed}| row type| {rt} | missing| {ct.ColumnSubject}" );
 					status = false;
 
@@ -2203,7 +2441,7 @@ namespace ExcelTest.SheetSchedule
 				{
 					Status.SetStatus(
 						ErrorCodes.EC_PP_PS_SCHED_WRONG_TITLES,
-						Overall.OS_PARTIAL_FAIL,
+						Overall.OS_WARNING,
 						$"{fileBeingParsed}| row type| {rt} | required| {ct.Heading} | found| {actCt.Heading}"
 						);
 					status = false;
@@ -2284,10 +2522,54 @@ namespace ExcelTest.SheetSchedule
 					break;
 				}
 			}
-
 			return value;
 		}
 
+
+		// add the headers to the headers collection (dictionary)
+		// the index is the header depth
+		public void saveHeadings(DataRow d)
+		{
+			headerInfo = new Dictionary<int, string?>();
+
+			headerInfo.Add(0, string.Empty);
+
+			int c = -1;
+			string value = null;
+			int depth = 0;
+
+			foreach (ColumnTitle ct in schColTitleData)
+			{
+				c++;
+
+				if ( ct.ColumnSubject == CS_HEADING)
+				{
+					depth++;
+
+					value = (d?.Field<string>(c) ?? "");
+
+					// if empty, done
+					if (value.IsVoid()) break;
+
+					// got a heading value
+					if (!addHeadingValue(depth, value)) break;
+				}
+			}
+		}
+
+		private bool addHeadingValue(int depth, string hdr)
+		{
+			if (!headerInfo.ContainsKey(depth - 1)) return false;
+
+			headerInfo.Add(depth, hdr);
+
+			return true;
+		}
+
+
+		/*
+		// add the header information to the collection
+		// this is a dictionary with the index equal to the header depth
 		private void getHeading(DataRow d)
 		{
 			string value;
@@ -2309,28 +2591,29 @@ namespace ExcelTest.SheetSchedule
 
 			headerInfo.Add(depth, value);
 		}
+		*/
 
-		/*
-		 private void addHeadings()
-		{
-			if (headerInfo == null || headerInfo.Count == 0) return;
-
-			foreach (KeyValuePair<int, string?> kvp in headerInfo)
-			{
-				colInfo.Add(colValueIdx++, new colValue(CS_HEADING, kvp.Value));
-			}
-		}*/
-
+		// add the headings to the sheet data
 		private void addHeadings(IPdfData? item)
 		{
-			if (headerInfo == null || headerInfo.Count == 0) return;
+			if (headerInfo == null || headerInfo.Count == 1) return;
 
-			foreach (KeyValuePair<int, string?> kvp in headerInfo)
+			KeyValuePair<int, string?> kvp;
+
+			for (int i = 1; i < headerInfo.Count; i++)
 			{
-				item.SetValue(CS_HEADING, kvp.Value);
-				// colInfo.Add(colValueIdx++, new colValue(CS_HEADING, kvp.Value));
+				item.SetValue(CS_HEADING, headerInfo[i]);
 			}
+
+
+			// foreach (KeyValuePair<int, string?> kvp in headerInfo)
+			// {
+			// 	item.SetValue(CS_HEADING, kvp.Value);
+			// 	// colInfo.Add(colValueIdx++, new colValue(CS_HEADING, kvp.Value));
+			// }
 		}
+
+
 
 		// prime schedule
 
@@ -2343,8 +2626,9 @@ namespace ExcelTest.SheetSchedule
 
 			string a = $"{(pdfSch.Sequence),3} ";
 			string c = $"{(pdfSch.FilePath ?? "no file"),-30}";
+			string f = $"{(pdfSch.PdfPath ?? "no path"),-31}";
 
-			M.WriteLine($"XLSX| seq->{a}| xls file-> {c}| hdr-> {h}");
+			M.WriteLine($"XLSX| seq->{a}| xls filename-> {c}| pdf path-> {f}| hdr-> {h}");
 		}
 
 		// pdf data
@@ -2355,7 +2639,7 @@ namespace ExcelTest.SheetSchedule
 			pdfDocData.Headings.ForEach(s => { h += $"\\{s} "; } );
 
 			string a = $"{(pdfDocData.Sequence),3} ";
-			string c = $"{(pdfDocData.FilePath ?? "no file"),-30}";
+			string c = $"{(pdfDocData.FilePath ?? "no file"),-78}";
 
 			M.WriteLine($"PDF | seq->{a}| pdf file-> {c}| hdr-> {h}");
 		}
@@ -2373,11 +2657,10 @@ namespace ExcelTest.SheetSchedule
 
 			// string b = $"{h ?? (priorHeader ?? "none")}";
 			string c = $"{(pdfShtData.SheetNumber ?? "no sht num"),-7}";
-			string d = $"{(pdfShtData.SheetName ?? "no sht name"),-20}";
+			string d = $"{(pdfShtData.SheetName ?? "no sht name"),-68}";
 
 			M.WriteLine($"SHT | seq->{a}| num-> {c}| name> {d}| hdr-> {h}");
 		}
-
 
 		// show
 

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>81b4db4a-701e-4ee4-b061-e8cff8f44869</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>CommonPdfCode</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PdfLibrary\PdfSupport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PdfLibrary\PdfTextSupport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShCode\PdfNodeTree.cs" />
+  </ItemGroup>
+</Project>

@@ -11,17 +11,18 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ExcelDataReader;
 using ExcelTest.Annotations;
 using ExcelTest.SheetSchedule;
 using iText.Commons.Utils;
 using SettingsManager;
-using SharedCode.ShCode;
-using SharedPdfCode.ShCode;
+using CommonCode.ShCode;
+using CommonPdfCodePdfLibrary;
+using CommonPdfCodeShCode;
 using UtilityLibrary;
-using static SharedCode.ShCode.Status.StatusData;
-using iText.StyledXmlParser.Jsoup.Internal;
+using static CommonCode.ShCode.Status.StatusData;
+
 using Microsoft.WindowsAPICodePack.Dialogs;
+// using static CommonCode.ShCode.Status;
 
 
 namespace ExcelTest.Windows
@@ -90,12 +91,13 @@ namespace ExcelTest.Windows
 			getPrimeFilePath();
 			getDestFilePath();
 
+			// OnPropertyChanged(nameof(PrimeFolderPath));
+			// OnPropertyChanged(nameof(PrimeFileName));
+			// OnPropertyChanged(nameof(DestFolderPath));
+			// OnPropertyChanged(nameof(DestFileNameNoExt));
+
 			PbarPhaseReset();
 			PbarStatReset();
-
-			OnPropertyChanged(nameof(Overwrite));
-			OnPropertyChanged(nameof(OverwriteDest));
-			OnPropertyChanged(nameof(OverwriteOptions));
 		}
 
 		private void quit()
@@ -294,23 +296,6 @@ namespace ExcelTest.Windows
 			}
 		}
 
-				
-		private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
-		{
-			WinLocation l = UserSettings.Data.GetLocation(WinId.WINMAIN);
-
-			this.Top = l.Top;
-			this.Left = l.Left;
-		}
-
-		private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
-		{
-			UserSettings.Data.SaveLocation(WinId.WINMAIN, 
-				new WinLocation(this.Top, this.Left, this.Height, this.Width));
-
-			UserSettings.Admin.Write();
-		}
-
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -413,6 +398,8 @@ namespace ExcelTest.Windows
 			OnPropertyChanged(nameof(DestFileNameNoExt));
 		}
 
+
+
 		private void BtnExit_OnClick(object sender, RoutedEventArgs e)
 		{
 			quit();
@@ -422,30 +409,25 @@ namespace ExcelTest.Windows
 		private void BtnClr_OnClick(object sender, RoutedEventArgs e)
 		{
 			Messages = "";
-
-			PbarPhaseReset();
-			PbarStatReset();
 		}
+
 
 		private void BtnGetPrimeFile_OnClick(object sender, RoutedEventArgs e)
 		{
-			/*
-			var d = new Microsoft.Win32.OpenFileDialog();
-			d.InitialDirectory = primeFilePath.FolderPath;
-			d.Multiselect = false;
-			d.Title = "Select Primary Schedule File";
 
-			// d.ShowHiddenItems = false;
-			d.Filter = $"Excel Schedule|*{PrimeFileExt}";
+			//var d = new Microsoft.Win32.OpenFileDialog();
+			//d.InitialDirectory = primeFilePath.FolderPath;
+			//d.Multiselect = false;
+			//d.Title = "Select Primary Schedule File";
+			//// d.ShowHiddenItems = false;
+			//d.Filter = $"Excel Schedule|*{PrimeFileExt}";
 
-			bool? result = d.ShowDialog() ;
+			//bool? result = d.ShowDialog() ;
 
-			if (result == true)
-			{
-				setPrimFilePath( d.FileName);
-			}
-			*/
-
+			//if (result == true)
+			//{
+			//	setPrimFilePath( d.FileName);
+			//}
 
 			CommonOpenFileDialog d = new CommonOpenFileDialog();
 			d.IsFolderPicker = false;
@@ -461,6 +443,7 @@ namespace ExcelTest.Windows
 			}
 
 		}
+
 
 		/*
 		private void BtnGetPrimeFolder_OnClick(object sender, RoutedEventArgs e)
@@ -484,22 +467,22 @@ namespace ExcelTest.Windows
 
 		private void BtnGetDestFolder_OnClick(object sender, RoutedEventArgs e)
 		{
+
 			/*
 			var d = new Microsoft.Win32.OpenFolderDialog();
-
+			
 			d.InitialDirectory = primeFilePath.FolderPath; // start at the same location
 			d.Multiselect = false;
 			d.Title = "Select Destination Folder";
 			d.ShowHiddenItems = false;
-
+			
 			bool? result = d.ShowDialog() ;
-
+			
 			if (result == true)
 			{
 				W.DestFolder = d.FolderName;
 			}
 			*/
-
 
 			CommonOpenFileDialog d = new CommonOpenFileDialog();
 			d.IsFolderPicker = true;
@@ -514,6 +497,7 @@ namespace ExcelTest.Windows
 			}
 
 		}
+
 
 		// complete process
 
@@ -581,6 +565,7 @@ namespace ExcelTest.Windows
 				else if (idx == 5) { result = createPdfTree(); }
 				else if (idx == 6) { result = mergePdfTree(); }
 				else if (idx == 7) { result = createBookmarkTree(); }
+				else if (idx == 8) { result = validateFilesInFolder(); }
 
 				if (result) { showProgressStatus(); }
 
@@ -588,6 +573,10 @@ namespace ExcelTest.Windows
 
 				// if (idx > 2) break;
 			}
+
+			// result = PdfSupport.CreateHyperLinke();
+
+			if (idx > idxMax) PdfSupport.ClosePdf();
 
 			return result;
 		}
@@ -599,17 +588,36 @@ namespace ExcelTest.Windows
 
 		private void showStatus(bool result)
 		{
-			int idx = result ? 0 : 1;
+			int idx = 0;
+
+			if (Status.Overall == Overall.OS_FAIL)
+			{
+				Status.Phase = PS_PH_ER;
+				idx = 1;
+			} 
+			else if (Status.Overall == Overall.OS_WARNING)
+			{
+				Status.Phase = PS_PH_XX;
+				idx = 2;
+			}
+			else
+			{
+				Status.Phase = PS_PH_XX;
+			}
 
 			W.PbStatValue++;
+
+			W.PbarPhaseReset();
 
 			string[,] msgs = new string[,]
 			{
 				// [0,0] & [0,1] - good
 				{ "\n*** PROCESS WORKED ***", 
 					$"Page Count| {schSupport.PageCount}" },
-				// [0,0] & [0,1] - fail
-				{"\n*** FAILED ***", null }
+				// [1,0] & [1,1] - fail
+				{"\n*** FAILED ***", null },
+				// [2,0] & [2,1] - fail
+				{"\n*** WARNING ***", "A non-fatal issue has occurred"}
 			};
 			
 			// prefix msg - nothing when null
@@ -685,6 +693,11 @@ namespace ExcelTest.Windows
 			return schSupport.CreatePdfOutlineTree();
 		}
 
+		// step 8 [vf] - validate files in folder
+		private bool validateFilesInFolder()
+		{
+			return schSupport.ValidateFilesInFolder(primeFilePath);
+		}
 		
 		// step 2
 		private void BtnProcessPrimary_OnClick(object sender, RoutedEventArgs e)
@@ -763,6 +776,7 @@ namespace ExcelTest.Windows
 			}
 		}
 
+
 		// tests
 
 		/*
@@ -789,14 +803,14 @@ namespace ExcelTest.Windows
 			x.Multiselect = false;
 			x.Title = "Select Initial Folder";
 			x.ShowHiddenItems = false;
-
+			
 			result = x.ShowDialog();
-
+			
 			if (result == true)
 			{
 				M.WriteLine($"got folder| {x.FolderName}");
 			}
-			
+
 		}
 		*/
 
@@ -943,6 +957,5 @@ namespace ExcelTest.Windows
 			OnPropertyChanged(nameof(OverwriteDest));
 			OnPropertyChanged(nameof(OverwriteOptions));
 		}
-
 	}
 }

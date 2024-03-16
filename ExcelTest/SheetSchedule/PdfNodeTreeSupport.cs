@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using SharedCode.ShCode;
-using SharedPdfCode.ShCode;
+using CommonCode.ShCode;
+using CommonPdfCodeShCode;
 using UtilityLibrary;
-using static SharedCode.ShCode.M;
-using static SharedCode.ShCode.Status.StatusData;
+using static CommonCode.ShCode.M;
+using static CommonCode.ShCode.Status.StatusData;
 
 #endregion
 
@@ -80,10 +80,11 @@ namespace ExcelTest.SheetSchedule
 
 			if (data.RowType == RowType.RT_SHEET)
 			{
+				PdfShtData d = (PdfShtData) data;
+
 				// got a single page pdf / sheet
 				node = new PdfTreeLeaf(data.Bookmark,
-					data.File, 
-					data.PageCount);
+					data.File, data.PageCount, d.SheetNumber, d.SheetName);
 
 				tree.AddNode(data.Headings!, node);
 			} 
@@ -119,7 +120,7 @@ namespace ExcelTest.SheetSchedule
 				{
 					node = new PdfTreeLeaf(data.Bookmark,
 						(FilePath<FileNameSimple>) data.File, 
-						data.PageCount);
+						data.PageCount, null, null);
 
 					tree.AddNode(data.Headings, node);
 				}
@@ -128,7 +129,7 @@ namespace ExcelTest.SheetSchedule
 			else
 			{
 				Status.SetStatus(ErrorCodes.EC_CT_INVALID_ITEM_FOUND,
-					Overall.OS_PARTIAL_FAIL);
+					Overall.OS_WARNING);
 			}
 		}
 
@@ -137,7 +138,7 @@ namespace ExcelTest.SheetSchedule
 			if (data.PdfFile.HasOutlineError)
 			{
 				Status.SetStatus(ErrorCodes.EC_CT_OUTLINES_HAS_ERRORS,
-					Overall.OS_PARTIAL_FAIL, $"File| {data.File.FileName} | {data.Bookmark}");
+					Overall.OS_WARNING, $"File| {data.File.FileName} | {data.Bookmark}");
 			}
 
 			PdfTreeNode node;
@@ -146,7 +147,7 @@ namespace ExcelTest.SheetSchedule
 
 			int depthChange = 4; // 2 == up / 3 == down / 4 == level
 			int levelnum = 0;
-			int priorlevel = 1;
+			// int priorlevel = 1;
 
 			// data.Headings is just a node list
 
@@ -170,9 +171,7 @@ namespace ExcelTest.SheetSchedule
 
 				depthChange = kvp.Value[2];
 
-
-				node = new PdfTreeNode(kvp.Key, 
-					(FilePath<FileNameSimple>) data.File, 0);
+				node = new PdfTreeNode(kvp.Key, (FilePath<FileNameSimple>) data.File, 0);
 
 				node.Level = levelnum+1;
 				
@@ -198,7 +197,7 @@ namespace ExcelTest.SheetSchedule
 					data.Headings.Add(kvp.Key);
 				}
 
-				priorlevel = kvp.Value[0];
+				// priorlevel = kvp.Value[0];
 			}
 
 		}
